@@ -10,7 +10,7 @@ env:
   SECRET_KEY: envSecretKey
   POSTGRES_DB: postgres
   POSTGRES_USER: postgres
-  POSTGRES_PASSWORD: password
+  POSTGRES_PASSWORD: postgres
 
 jobs:
   build:
