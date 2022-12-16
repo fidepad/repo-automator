@@ -19,11 +19,18 @@ from django.urls import path
 # fmt: off
 from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
                                    SpectacularSwaggerView)
+from knox import views as knox_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+
     # Documentation Endpoints
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(), name="swagger"),
     path("api/redoc/", SpectacularRedocView.as_view(), name="redoc"),
+
+    # Knox Endpoints
+    path("auth/get-token", knox_views.LogoutView.as_view(), name="login"),
+    path(r"auth/logout/", knox_views.LogoutView.as_view(), name="logout"),
+    path(r"auth/logoutall/", knox_views.LogoutAllView.as_view(), name="logoutall"),
 ]

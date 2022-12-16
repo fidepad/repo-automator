@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     # Install Apps
     "rest_framework",
     "drf_spectacular",
+    "knox",
 ]
 
 MIDDLEWARE = [
@@ -134,12 +135,22 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_AUTHENTICATION_CLASSES": ("knox.auth.TokenAuthentication",),
 }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Repo Automator API",
     "DESCRIPTION": "This is the backend of the git repo automator that replicates push "
-                   "and merge actions between two repositories",
+    "and merge actions between two repositories",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+}
+
+REST_KNOX = {
+    "SECURE_HASH_ALGORITHM": "cryptography.hazmat.primitives.hashes.SHA512",
+    "AUTH_TOKEN_CHARACTER_LENGTH": 64,
+    "TOKEN_TTL": None,  # Token would not expire
+    "USER_SERIALIZER": "knox.serializers.UserSerializer",
+    "TOKEN_LIMIT_PER_USER": None,
+    "AUTO_REFRESH": False,
 }
