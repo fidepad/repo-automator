@@ -87,7 +87,7 @@ DATABASES = {
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
         "HOST": "localhost",
-        "PORT": "5432",
+        "PORT": 5432,
     }
 }
 
@@ -154,3 +154,6 @@ REST_KNOX = {
     "TOKEN_LIMIT_PER_USER": None,
     "AUTO_REFRESH": False,
 }
+
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"

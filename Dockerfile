@@ -9,5 +9,6 @@ RUN apk update && apk add postgresql-dev gcc python3-dev musl-dev make
 WORKDIR /repo_automator
 
 COPY requirements.txt requirements.txt
+COPY .env.example .env
 
 RUN pip3 install -r requirements.txt

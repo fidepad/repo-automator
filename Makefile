@@ -16,5 +16,8 @@ install:
 run:
 	python manage.py runserver
 
+build:
+	docker-compose build
+
 start:
 	docker-compose up
