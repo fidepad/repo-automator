@@ -11,7 +11,7 @@ mm:
 	python manage.py makemigrations
 
 install:
-	pip install requirements.txt
+	pip install -r requirements.txt
 
 run:
 	python manage.py runserver
