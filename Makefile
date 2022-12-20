@@ -21,3 +21,7 @@ build:
 
 start:
 	docker-compose up
+
+tests:
+	isort .
+	pylint --recursive=y .
