@@ -22,6 +22,12 @@ build:
 start:
 	docker-compose up
 
-tests:
+lints:
 	isort .
 	pylint --recursive=y .
+	black .
+	flake8
+	docformatter .
+
+test:
+	python manage.py test

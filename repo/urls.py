@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+
 # fmt: off
 from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
                                    SpectacularSwaggerView)
@@ -24,9 +25,9 @@ urlpatterns = [
     path("admin/", admin.site.urls),
 
     # Documentation Endpoints
-    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
-    path("api/docs/", SpectacularSwaggerView.as_view(), name="swagger"),
-    path("api/redoc/", SpectacularRedocView.as_view(), name="redoc"),
+    path("schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("docs/", SpectacularSwaggerView.as_view(), name="swagger"),
+    path("redoc/", SpectacularRedocView.as_view(), name="redoc"),
 
     # Knox Endpoints
     path("auth/get-token", knox_views.LoginView.as_view(), name="login"),
