@@ -1,0 +1,11 @@
+[MASTER]
+ignore-paths=
+    migrations, env
+
+ignore=
+    manage.py
+
+disable=
+    too-many-instance-attributes,
+    len-as-condition,
+    too-few-public-methods
