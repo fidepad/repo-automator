@@ -31,7 +31,7 @@ urlpatterns = [
     path("redoc/", SpectacularRedocView.as_view(), name="redoc"),
 
     # Knox Endpoints
-    path("auth/get-token", knox_views.LoginView.as_view(), name="login"),
+    path("auth/login/", knox_views.LoginView.as_view(), name="login"),
     path(r"auth/logout/", knox_views.LogoutView.as_view(), name="logout"),
     path(r"auth/logoutall/", knox_views.LogoutAllView.as_view(), name="logoutall"),
 ]

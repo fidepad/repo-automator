@@ -1,6 +1,9 @@
 import json
 
-from rest_framework import generics, response, status
+from rest_framework import generics, response, status, viewsets
+
+from automate.models import Repository
+from automate.serializers import RepositorySerializer
 
 
 class WebHookListView(generics.GenericAPIView):
@@ -13,3 +16,8 @@ class WebHookListView(generics.GenericAPIView):
             {"message": "success", "action": content.get("action")},
             status=status.HTTP_200_OK,
         )
+
+
+class RepositoryViewSets(viewsets.ModelViewSet):
+    queryset = Repository.objects.all()
+    serializer_class = RepositorySerializer

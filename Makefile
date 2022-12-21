@@ -23,7 +23,7 @@ start:
 	docker-compose up
 
 lints:
-	isort . 
+	isort .
 	pylint --recursive=y .
 	black .
 	flake8
