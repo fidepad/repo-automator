@@ -40,10 +40,10 @@ class Repository(BaseModel):
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
-    slug = models.SlugField(max_length=250, unique=True, null=True)
+    slug = models.SlugField(max_length=250, unique=True, null=True, blank=True)
     
     def save(self, *args, **kwargs):
-        task_name = f"{self.primary_repo} {self.secondary_repo}"
+        task_name = f"{self.primary_repo} to {self.secondary_repo}"
         self.slug = slugify(task_name)
         super(Repository, self).save(*args, **kwargs)
 

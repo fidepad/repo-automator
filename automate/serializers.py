@@ -18,7 +18,17 @@ class WebHookSerializer(serializers.Serializer):
 
 class RepositorySerializer(serializers.ModelSerializer):
     """Repository Serializer."""
+    user = serializers.SerializerMethodField()
+
     class Meta:
         """Meta class for Repository Serializer."""
         model = Repository
-        fields = "__all__"
+        exclude = ["created_at", "updated_at"]
+        lookup_field = "slug"
+
+    def get_user(self, obj):
+        user = {
+            "username": obj.owner.username,
+            "email": obj.owner.email
+        }
+        return user

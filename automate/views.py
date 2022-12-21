@@ -22,6 +22,7 @@ class RepositoryViewSets(viewsets.ModelViewSet):
     """Repository ViewSets."""
     serializer_class = RepositorySerializer
     queryset = Repository.objects.all()
+    lookup_field = "slug"
 
     def get_queryset(self):
         owner = self.request.user
