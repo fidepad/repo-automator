@@ -1,0 +1,14 @@
+from django_filters.rest_framework import FilterSet
+
+from automate.models import Repository
+
+
+class RepositoryFilter(FilterSet):
+    """Repository Filterset Class."""
+
+    class Meta:
+        """Meta class for Repository Filterset Class."""
+        model = Repository
+        # fmt = off
+        fields = ["owner__email", "owner__username", "owner", "primary_repo", "secondary_repo", "slug"]
+

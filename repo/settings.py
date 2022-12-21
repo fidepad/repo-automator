@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "drf_spectacular",
     "knox",
+    "django_filters",
 ]
 
 MIDDLEWARE = [

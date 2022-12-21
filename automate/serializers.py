@@ -1,3 +1,4 @@
+from django.db import IntegrityError
 from rest_framework import serializers
 
 from automate.models import Repository
@@ -25,6 +26,11 @@ class RepositorySerializer(serializers.ModelSerializer):
         model = Repository
         exclude = ["created_at", "updated_at"]
         lookup_field = "slug"
+        extra_kwargs = {
+            "owner": {"read_only": True},
+            "primary_repo_type": {"required": True},
+            "secondary_repo_type": {"required": True},
+        }
 
     def get_user(self, obj):
         user = {
@@ -32,3 +38,12 @@ class RepositorySerializer(serializers.ModelSerializer):
             "email": obj.owner.email
         }
         return user
+
+    def create(self, validated_data):
+        owner = self.context.get("owner")
+        validated_data["owner"] = owner
+        try:
+            result = super(RepositorySerializer, self).create(validated_data)
+            return result
+        except IntegrityError:
+            raise serializers.ValidationError({"message": "Primary & Secondary Repo names exists. Please rename!"})
