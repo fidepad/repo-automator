@@ -1,0 +1,15 @@
+import json
+
+from rest_framework import generics, response, status
+
+
+class WebHookListView(generics.GenericAPIView):
+    """API View to receive payload from github."""
+
+    def post(self, request):
+        """This webhook receives payload from github whenever a PR is approved and merged"""
+        content = json.loads(request.body)
+        return response.Response(
+            {"message": "success", "action": content.get("action")},
+            status=status.HTTP_200_OK,
+        )
