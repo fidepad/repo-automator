@@ -19,5 +19,10 @@ class WebHookListView(generics.GenericAPIView):
 
 
 class RepositoryViewSets(viewsets.ModelViewSet):
-    queryset = Repository.objects.all()
+    """Repository ViewSets."""
     serializer_class = RepositorySerializer
+    queryset = Repository.objects.all()
+
+    def get_queryset(self):
+        owner = self.request.user
+        return Repository.objects.filter(owner=owner)

@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
+from django.utils.text import slugify
 
 
 class BaseModel(models.Model):
@@ -39,6 +40,12 @@ class Repository(BaseModel):
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
+    slug = models.SlugField(max_length=250, unique=True, null=True)
+    
+    def save(self, *args, **kwargs):
+        task_name = f"{self.primary_repo} {self.secondary_repo}"
+        self.slug = slugify(task_name)
+        super(Repository, self).save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.owner} Repository"
