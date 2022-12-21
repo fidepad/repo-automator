@@ -40,7 +40,7 @@ jobs:
         flake8 .
     - name: Run docformatter tests
       run: |
-        docformatter --check --diff .
+        docformatter --in-place --recursive .
     - name: Run isort tests
       run: |
         isort .
@@ -50,6 +50,3 @@ jobs:
     - name: Run pylint tests
       run: |
         pylint .
-    - name: Run black tests
-      run: |
-        black --check .
