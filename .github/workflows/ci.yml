@@ -35,3 +35,21 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
+    - name: Run flake8 tests
+      run: |
+        flake8 .
+    - name: Run docformatter tests
+      run: |
+        docformatter --check --diff .
+    - name: Run isort tests
+      run: |
+        isort .
+    - name: Run black tests
+      run: |
+        black --check .
+    - name: Run pylint tests
+      run: |
+        pylint .
+    - name: Run black tests
+      run: |
+        black --check .
