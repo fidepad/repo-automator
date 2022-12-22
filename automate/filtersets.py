@@ -8,7 +8,7 @@ class RepositoryFilter(FilterSet):
 
     class Meta:
         """Meta class for Repository Filterset Class."""
-        model = Project
-        # fmt = off
-        fields = ["owner__email", "owner__username", "owner", "primary_repo", "secondary_repo", "slug"]
 
+        model = Project
+        # fmt: off
+        fields = ["owner__email", "owner__username", "owner", "primary_repo", "secondary_repo", "slug"]

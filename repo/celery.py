@@ -1,4 +1,4 @@
-"""Celery file to set up celery in projects repo"""
+"""Celery file to set up celery in projects repo."""
 
 import os
 

@@ -10,8 +10,9 @@ disable=
     len-as-condition,
     too-few-public-methods,
     missing-module-docstring,
-
-    invalid-name
+    invalid-name,
+    too-many-ancestors,
+    no-member
 
 [FORMAT]
 max-line-length=180

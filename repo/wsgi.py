@@ -1,5 +1,4 @@
-"""
-WSGI config for repo project.
+"""WSGI config for repo project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

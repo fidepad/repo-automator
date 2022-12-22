@@ -1,4 +1,4 @@
-"""This ensures Celery is always ran when server comes on"""
+"""This ensures Celery is always ran when server comes on."""
 from __future__ import absolute_import, unicode_literals
 
 # This will make sure the app is imported when django starts so shared tasks would use it

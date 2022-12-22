@@ -23,7 +23,7 @@ class Project(BaseModel):
     name = models.CharField(
         max_length=200,
         help_text="Name of task or project i.e copy from parent to child",
-        unique=True
+        unique=True,
     )
     primary_repo = models.CharField(
         max_length=100, help_text="Name of original repository"
@@ -49,7 +49,7 @@ class Project(BaseModel):
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
-        super(Project, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.owner} Project"

@@ -19,10 +19,12 @@ class WebHookSerializer(serializers.Serializer):
 
 class RepositorySerializer(serializers.ModelSerializer):
     """Repository Serializer."""
+
     user = serializers.SerializerMethodField()
 
     class Meta:
         """Meta class for Repository Serializer."""
+
         model = Project
         exclude = ["created_at", "updated_at"]
         lookup_field = "slug"
@@ -33,17 +35,17 @@ class RepositorySerializer(serializers.ModelSerializer):
         }
 
     def get_user(self, obj):
-        user = {
-            "username": obj.owner.username,
-            "email": obj.owner.email
-        }
+        """Gets the user information and returns the name and email address."""
+        user = {"username": obj.owner.username, "email": obj.owner.email}
         return user
 
     def create(self, validated_data):
         owner = self.context.get("owner")
         validated_data["owner"] = owner
         try:
-            result = super(RepositorySerializer, self).create(validated_data)
+            result = super().create(validated_data)
             return result
         except IntegrityError as err:
-            raise serializers.ValidationError({"message": "Integrity Error", "detail": str(err)})
+            raise serializers.ValidationError(
+                {"message": "Integrity Error", "detail": str(err)}
+            )

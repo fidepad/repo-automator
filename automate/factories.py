@@ -1,5 +1,5 @@
-from django.contrib.auth import get_user_model
 import factory
+from django.contrib.auth import get_user_model
 
 from automate.models import Project
 
@@ -8,10 +8,12 @@ User = get_user_model()
 
 class UserFactory(factory.django.DjangoModelFactory):
     """User Factory."""
+
     class Meta:
         """User Factory Meta Class."""
+
         model = User
-        django_get_or_create = ("username", )
+        django_get_or_create = ("username",)
 
     password = factory.PostGenerationMethodCall("set_password", "pass")
     username = "user1"
@@ -20,8 +22,10 @@ class UserFactory(factory.django.DjangoModelFactory):
 
 class RepositoryFactory(factory.django.DjangoModelFactory):
     """Repository Factory."""
+
     class Meta:
-        """Repository Meta Class"""
+        """Repository Meta Class."""
+
         model = Project
 
     owner = factory.SubFactory(UserFactory)
