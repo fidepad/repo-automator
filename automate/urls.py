@@ -3,6 +3,8 @@ from rest_framework.routers import SimpleRouter
 
 from automate.views import WebHookListView, RepositoryViewSets
 
+app_name = "repository"
+
 router = SimpleRouter()
 router.register("", RepositoryViewSets)
 
