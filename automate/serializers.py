@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 from rest_framework import serializers
 
-from automate.models import Repository
+from automate.models import Project
 
 
 class WebHookSerializer(serializers.Serializer):
@@ -23,7 +23,7 @@ class RepositorySerializer(serializers.ModelSerializer):
 
     class Meta:
         """Meta class for Repository Serializer."""
-        model = Repository
+        model = Project
         exclude = ["created_at", "updated_at"]
         lookup_field = "slug"
         extra_kwargs = {
@@ -45,5 +45,5 @@ class RepositorySerializer(serializers.ModelSerializer):
         try:
             result = super(RepositorySerializer, self).create(validated_data)
             return result
-        except IntegrityError:
-            raise serializers.ValidationError({"message": "Primary & Secondary Repo names exists. Please rename!"})
+        except IntegrityError as err:
+            raise serializers.ValidationError({"message": "Integrity Error", "detail": str(err)})

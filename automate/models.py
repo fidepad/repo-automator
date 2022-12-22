@@ -10,7 +10,7 @@ class BaseModel(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-class Repository(BaseModel):
+class Project(BaseModel):
     """Repository Model."""
 
     class RepoType(models.TextChoices):
@@ -20,6 +20,11 @@ class Repository(BaseModel):
         GITBUCKET = "gitbucket", "Gitbucket"
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    name = models.CharField(
+        max_length=200,
+        help_text="Name of task or project i.e copy from parent to child",
+        unique=True
+    )
     primary_repo = models.CharField(
         max_length=100, help_text="Name of original repository"
     )
@@ -41,14 +46,13 @@ class Repository(BaseModel):
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
     slug = models.SlugField(max_length=250, unique=True, null=True, blank=True)
-    
+
     def save(self, *args, **kwargs):
-        task_name = f"{self.primary_repo} to {self.secondary_repo}"
-        self.slug = slugify(task_name)
-        super(Repository, self).save(*args, **kwargs)
+        self.slug = slugify(self.name)
+        super(Project, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.owner} Repository"
+        return f"{self.owner} Project"
 
 
 class History(BaseModel):

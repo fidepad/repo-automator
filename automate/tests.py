@@ -19,8 +19,8 @@ class TestRepository(APITestCase):
             "secondary_repo_url": "https://gitbucket.com/secondary-repo.git",
             "secondary_repo_type": "gitbucket"
         }
-        self.url_list = reverse("repository:repository-list")
-        self.url_detail = reverse("repository:repository-detail", kwargs={"slug": self.repo1.slug})
+        self.url_list = reverse("repository:project-list")
+        self.url_detail = reverse("repository:project-detail", kwargs={"slug": self.repo1.slug})
 
     def test_to_ensure_only_authenticated_users_can_access_endpoint(self):
         with self.subTest("Accessing notification-list"):
@@ -49,7 +49,14 @@ class TestRepository(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(len(content) == 0)
 
+        with self.subTest("Ensuring name is providing when creating project"):
+            response = self.client.post(self.url_list, data=self.data)
+            content = json.loads(response.content)
+            self.assertEqual(response.status_code, 400)
+            self.assertIn("name", content)
+
         with self.subTest("Creating new Project with a different user"):
+            self.data['name'] = "primary repository to secondary repository"
             response = self.client.post(self.url_list, data=self.data)
             content = json.loads(response.content)
             self.assertEqual(response.status_code, 201)

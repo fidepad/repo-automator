@@ -4,7 +4,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, response, status, viewsets, filters
 
 from automate.filtersets import RepositoryFilter
-from automate.models import Repository
+from automate.models import Project
 from automate.serializers import RepositorySerializer
 
 
@@ -27,7 +27,7 @@ class RepositoryViewSets(viewsets.ModelViewSet):
     if you are pushing to a different version control.
     """
     serializer_class = RepositorySerializer
-    queryset = Repository.objects.all()
+    queryset = Project.objects.all()
     lookup_field = "slug"
     filter_backends = [
         DjangoFilterBackend,
@@ -40,7 +40,7 @@ class RepositoryViewSets(viewsets.ModelViewSet):
 
     def get_queryset(self):
         owner = self.request.user
-        return Repository.objects.filter(owner=owner)
+        return Project.objects.filter(owner=owner)
 
     def get_serializer_context(self):
         context = super().get_serializer_context()

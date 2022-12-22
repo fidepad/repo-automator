@@ -23,7 +23,7 @@ from knox import views as knox_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("repos/", include("automate.urls")),
+    path("projects/", include("automate.urls")),
 
     # Documentation Endpoints
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
