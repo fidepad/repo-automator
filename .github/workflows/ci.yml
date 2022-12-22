@@ -47,9 +47,6 @@ jobs:
       - name: Sort imports with isort
         run: |
           isort . --recursive --apply
-      - name: Lint with pylint
-        run: |
-          pylint . --disable=R,C,W1203
       - name: Run unit tests
         run: |
           python -m unittest discover
