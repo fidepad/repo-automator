@@ -35,7 +35,6 @@ class TestProject(APITestCase):
             response = self.client.get(self.url_detail)
             content = json.loads(response.content)
             self.assertEqual(response.status_code, 401)
-            self.assertIn("detail", content)
             self.assertEqual(
                 content.get("detail"), "Authentication credentials were not provided."
             )
