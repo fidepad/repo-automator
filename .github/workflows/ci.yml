@@ -35,18 +35,19 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
-    - name: Run flake8 tests
+   - name: Lint with flake8
       run: |
-        flake8 .
-    - name: Run docformatter tests
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+    - name: Format with docformatter
       run: |
         docformatter --in-place --recursive .
-    - name: Run isort tests
+    - name: Format with black
       run: |
-        isort .
-    - name: Run black tests
+        black . --line-length=180
+    - name: Sort imports with isort
       run: |
-        black --check .
-    - name: Run pylint tests
+        isort . --recursive --apply
+    - name: Lint with pylint
       run: |
-        pylint .
+        pylint . --disable=R,C,W1203
