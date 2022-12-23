@@ -19,13 +19,13 @@ class ProjectViewSets(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     lookup_field = "slug"
+    # Added filter backends to settings and they stopped working along with knox auth
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
         filters.OrderingFilter,
     ]
     filterset_class = RepositoryFilter
-    ordering_fields = ["id", "owner", "created_at", "updated_at"]
     search_fields = [
         "id",
         "name",
