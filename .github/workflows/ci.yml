@@ -37,9 +37,7 @@ jobs:
       - name: Lint with flake8
         run: |
          flake8 . --config=setup.cfg
-      - name: Format with docformatter
-        run: |
-          docformatter . --recursive --check
+      
       - name: Format with black
         run: |
           black --check --diff .
@@ -52,3 +50,6 @@ jobs:
       - name: Lint with pylint
         run: |
           pylint . --recursive=y --rcfile=.pylintrc
+      - name: Format with docformatter
+        run: |
+          docformatter . --recursive --check
