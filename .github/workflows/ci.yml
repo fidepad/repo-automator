@@ -45,7 +45,7 @@ jobs:
           black .
       - name: Sort imports with isort
         run: |
-          isort . --check-only --config-root
+          isort . --check-only
       - name: Run unit tests
         run: |
           python -m unittest discover
