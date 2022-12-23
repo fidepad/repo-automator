@@ -1,35 +1,22 @@
 import json
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, response, status, viewsets
+from rest_framework import filters, response, status, viewsets
 
 from automate.filtersets import RepositoryFilter
 from automate.models import Project
-from automate.serializers import RepositorySerializer
+from automate.serializers import ProjectSerializer
 
 
-class WebHookListView(generics.GenericAPIView):
-    """API View to receive payload from github."""
-
-    def post(self, request):
-        """This webhook receives payload from github whenever a PR is approved
-        and merged."""
-        content = json.loads(request.body)
-        return response.Response(
-            {"message": "success", "action": content.get("action")},
-            status=status.HTTP_200_OK,
-        )
-
-
-class RepositoryViewSets(viewsets.ModelViewSet):
-    """Repository ViewSets.
+class ProjectViewSets(viewsets.ModelViewSet):
+    """Project Repository ViewSets.
 
     Note: primary_repo_type and secondary_repo_type text choice fields of either github
     or gitbucket (for now). The default is github. Please ensure to provide (gitbucket or others)
     if you are pushing to a different version control.
     """
 
-    serializer_class = RepositorySerializer
+    serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     lookup_field = "slug"
     filter_backends = [
@@ -41,6 +28,7 @@ class RepositoryViewSets(viewsets.ModelViewSet):
     ordering_fields = ["id", "owner", "created_at", "updated_at"]
     search_fields = [
         "id",
+        "name",
         "slug",
         "primary_repo",
         "secondary_repo",

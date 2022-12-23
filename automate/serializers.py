@@ -4,20 +4,7 @@ from rest_framework import serializers
 from automate.models import Project
 
 
-class WebHookSerializer(serializers.Serializer):
-    """Webhook Serializer."""
-
-    class Meta:
-        """Meta class for Webhook Serializer."""
-
-    def create(self, validated_data):
-        pass
-
-    def update(self, instance, validated_data):
-        pass
-
-
-class RepositorySerializer(serializers.ModelSerializer):
+class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
 
     user = serializers.SerializerMethodField()
@@ -39,9 +26,12 @@ class RepositorySerializer(serializers.ModelSerializer):
         user = {"username": obj.owner.username, "email": obj.owner.email}
         return user
 
-    def create(self, validated_data):
+    def validate(self, attrs):
         owner = self.context.get("owner")
-        validated_data["owner"] = owner
+        attrs["owner"] = owner
+        return attrs
+
+    def create(self, validated_data):
         try:
             result = super().create(validated_data)
             return result

@@ -2,6 +2,8 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
 
+from automate.choices import RepoType
+
 
 class BaseModel(models.Model):
     """Base Model to reduce redundant columns below."""
@@ -11,13 +13,7 @@ class BaseModel(models.Model):
 
 
 class Project(BaseModel):
-    """Repository Model."""
-
-    class RepoType(models.TextChoices):
-        """Repository Types."""
-
-        GITHUB = "github", "Github"
-        GITBUCKET = "gitbucket", "Gitbucket"
+    """Project Repository Model."""
 
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(
@@ -45,14 +41,14 @@ class Project(BaseModel):
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
-    slug = models.SlugField(max_length=250, unique=True, null=True, blank=True)
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.owner} Project"
+        return f"{self.name} Project"
 
 
 class History(BaseModel):

@@ -1,6 +1,5 @@
-import json
-
 from django.shortcuts import reverse
+from django.utils.text import slugify
 from rest_framework.test import APITestCase
 
 from automate.factories import RepositoryFactory, UserFactory
@@ -33,9 +32,8 @@ class TestProject(APITestCase):
 
         with self.subTest("Accessing notification-detail"):
             response = self.client.get(self.url_detail)
-            content = json.loads(response.content)
+            content = response.data
             self.assertEqual(response.status_code, 401)
-            self.assertIn("detail", content)
             self.assertEqual(
                 content.get("detail"), "Authentication credentials were not provided."
             )
@@ -44,45 +42,45 @@ class TestProject(APITestCase):
         """This gets the project."""
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url_list)
-        content = json.loads(response.content)
+        content = response.data
         self.assertEqual(response.status_code, 200)
-        self.assertTrue(len(content) > 0)
+        self.assertTrue(len(content) == 1)
 
         with self.subTest("Test to ensure you only get projects you created"):
             user = UserFactory(username="anon")
             self.client.force_authenticate(user)
             response = self.client.get(self.url_list)
-            content = json.loads(response.content)
+            content = response.data
             self.assertEqual(response.status_code, 200)
             self.assertTrue(len(content) == 0)
 
         with self.subTest("Ensuring name is providing when creating project"):
             response = self.client.post(self.url_list, data=self.data)
-            content = json.loads(response.content)
+            content = response.data
             self.assertEqual(response.status_code, 400)
             self.assertIn("name", content)
 
         with self.subTest("Creating new Project with a different user"):
             self.data["name"] = "primary repository to secondary repository"
             response = self.client.post(self.url_list, data=self.data)
-            content = json.loads(response.content)
+            content = response.data
             self.assertEqual(response.status_code, 201)
             self.assertIn("user", content)
             self.assertEqual(
-                "primary-repository-to-secondary-repository", content.get("slug")
+                slugify(self.data.get("name")), content.get("slug")
             )
 
     def test_to_retrieve_and_update_project(self):
-        """Test to Gets and Updates project."""
+        """Test to Get and Updates project."""
         self.client.force_authenticate(self.user)
         response = self.client.get(self.url_detail)
-        content = json.loads(response.content)
-        self.assertIn("user", content)
-        self.assertIn("primary_repo", content)
+        content = response.data
+        self.assertEqual(self.repo1.name, content.get("name"))
+        self.assertEqual(response.status_code, 200)
 
         with self.subTest("Update project"):
             response = self.client.patch(
                 self.url_detail, data={"primary_repo_type": "gitbucket"}
             )
-            content = json.loads(response.content)
+            content = response.data
             self.assertEqual("gitbucket", content.get("primary_repo_type"))

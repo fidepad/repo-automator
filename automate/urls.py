@@ -1,13 +1,13 @@
 from django.urls import path
 from rest_framework.routers import SimpleRouter
 
-from automate.views import RepositoryViewSets, WebHookListView
+from automate.views import ProjectViewSets
 
 app_name = "repository"
 
 router = SimpleRouter()
-router.register("", RepositoryViewSets)
+router.register("", ProjectViewSets)
 
-urlpatterns = [path("webhook/", WebHookListView.as_view(), name="webhook")]
+urlpatterns = []
 
 urlpatterns += router.urls
