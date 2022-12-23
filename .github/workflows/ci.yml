@@ -45,10 +45,10 @@ jobs:
           black .
       - name: Sort imports with isort
         run: |
-          isort . --recursive --apply
+          isort . --config=setup.cfg
       - name: Run unit tests
         run: |
           python -m unittest discover
       - name: Lint with pylint
         run: |
-          pylint --recursive=y .
+          pylint . --recursive=y --rcfile=.pylintrc
