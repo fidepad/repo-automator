@@ -39,7 +39,7 @@ jobs:
          flake8 . --config=setup.cfg
       - name: Format with docformatter
         run: |
-          docformatter --check .
+          docformatter . --recursive --check
       - name: Format with black
         run: |
           black --check --diff .
