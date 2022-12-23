@@ -66,9 +66,7 @@ class TestProject(APITestCase):
             content = response.data
             self.assertEqual(response.status_code, 201)
             self.assertIn("user", content)
-            self.assertEqual(
-                slugify(self.data.get("name")), content.get("slug")
-            )
+            self.assertEqual(slugify(self.data.get("name")), content.get("slug"))
 
     def test_to_retrieve_and_update_project(self):
         """Test to Get and Updates project."""

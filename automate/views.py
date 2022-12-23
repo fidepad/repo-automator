@@ -1,7 +1,5 @@
-import json
-
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, response, status, viewsets
+from rest_framework import filters, viewsets
 
 from automate.filtersets import RepositoryFilter
 from automate.models import Project

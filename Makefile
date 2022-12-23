@@ -23,11 +23,11 @@ start:
 	docker-compose up
 
 lints:
-	isort .
+	flake8 . --config=setup.cfg
+	black --check --diff .
 	pylint --recursive=y .
-	black .
-	flake8
-	docformatter .
+	isort --check-only .
+	docformatter . --recursive --check
 
 test:
 	python manage.py test

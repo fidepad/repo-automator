@@ -8,8 +8,13 @@ from automate.choices import RepoType
 class BaseModel(models.Model):
     """Base Model to reduce redundant columns below."""
 
-    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        """Meta class for Base Model."""
+
+        abstract = True
 
 
 class Project(BaseModel):
@@ -49,15 +54,3 @@ class Project(BaseModel):
 
     def __str__(self):
         return f"{self.name} Project"
-
-
-class History(BaseModel):
-    """History Model to retain payload information."""
-
-    pr_id = models.IntegerField()
-    action = models.CharField(max_length=30, null=True)
-    body = models.TextField()
-    url = models.URLField()
-    author = models.CharField(max_length=200)
-    merged_at = models.DateTimeField(null=True)
-    closed_at = models.DateTimeField(null=True)

@@ -12,7 +12,8 @@ disable=
     missing-module-docstring,
     invalid-name,
     too-many-ancestors,
-    no-member
+    no-member,
+    fixme
 
 [FORMAT]
 max-line-length=180

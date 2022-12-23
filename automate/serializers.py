@@ -1,4 +1,3 @@
-from django.db import IntegrityError
 from rest_framework import serializers
 
 from automate.models import Project
@@ -30,12 +29,3 @@ class ProjectSerializer(serializers.ModelSerializer):
         owner = self.context.get("owner")
         attrs["owner"] = owner
         return attrs
-
-    def create(self, validated_data):
-        try:
-            result = super().create(validated_data)
-            return result
-        except IntegrityError as err:
-            raise serializers.ValidationError(
-                {"message": "Integrity Error", "detail": str(err)}
-            )
