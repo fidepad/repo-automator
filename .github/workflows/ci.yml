@@ -49,6 +49,6 @@ jobs:
       - name: Format with docformatter
         run: |
           docformatter . --recursive --check
-       - name: Format with black
+      - name: Format with black
         run: |
           black --check --diff .
