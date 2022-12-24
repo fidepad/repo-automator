@@ -51,10 +51,7 @@ jobs:
          flake8 . --config=setup.cfg
       - name: Sort imports with isort
         run: |
-          isort --check-only .
-      - name: Run unit tests
-        run: |
-          python -m unittest discover
+          isort --check-only --profile black .
       - name: Lint with pylint
         run: |
           pylint . --recursive=y --rcfile=.pylintrc

@@ -24,10 +24,18 @@ start:
 
 lints:
 	flake8 . --config=setup.cfg
-	black --check --diff .
+	black .
 	pylint --recursive=y .
-	isort --check-only .
+	isort --profile black .
 	docformatter . --recursive --check
+
+checks:
+	python manage.py test
+	flake8 . --config=setup.cfg
+	isort --check-only --profile black .
+	pylint . --recursive=y --rcfile=.pylintrc
+	docformatter . --recursive --check
+	black --check --diff .
 
 test:
 	python manage.py test

@@ -15,21 +15,20 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import include, path
-
-# fmt: off
-from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
-                                   SpectacularSwaggerView)
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 from knox import views as knox_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("projects/", include("automate.urls")),
-
     # Documentation Endpoints
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(), name="swagger"),
     path("redoc/", SpectacularRedocView.as_view(), name="redoc"),
-
     # Knox Endpoints
     path("auth/login/", knox_views.LoginView.as_view(), name="login"),
     path(r"auth/logout/", knox_views.LogoutView.as_view(), name="logout"),
