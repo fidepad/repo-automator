@@ -14,9 +14,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Project
         exclude = ["created_at", "updated_at"]
         lookup_field = "slug"
-        extra_kwargs = {
-            "owner": {"read_only": True}
-        }
+        extra_kwargs = {"owner": {"read_only": True}}
 
     def get_user(self, obj):
         """Gets the user information and returns the name and email address."""
