@@ -51,7 +51,7 @@ jobs:
          flake8 . --config=setup.cfg
       - name: Sort imports with isort
         run: |
-          isort --check-only --profile black .
+          isort --check-only --profile black --skip migrations .
       - name: Lint with pylint
         run: |
           pylint . --recursive=y --rcfile=.pylintrc
