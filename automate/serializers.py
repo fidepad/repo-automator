@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from automate.models import Project
+from .models import Project
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
-
+    token = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField()
 
     class Meta:
