@@ -1,41 +1,29 @@
-version: "3.8"
+version: '3'
 services:
-  redis:
-    image: redis:alpine
-    container_name: redis_repo_container
-
-  db:
+  repo_api:
+    container_name: repo_api
     image: postgres
-    volumes:
-    - ./data/db:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=repo_automator_db
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_HOST=db
-    container_name: postgres_repo_container
-
-  app:
-    build: .
-    volumes:
-    - .:/repo_automator
+      POSTGRES_USER: "user"
+      POSTGRES_PASSWORD: "123"
+      PGDATA: /data/repo_api
     ports:
-    - 8000:8000
-    image: app:repo_automator
-    container_name: django_repo_container
-    command: python manage.py runserver 0.0.0.0:8000
-    depends_on:
-      - db
-
-  celery:
-    restart: on-failure
-    build:
-      context: .
-    command: celery --app repo worker -l DEBUG
+      - "5432:5432"
     volumes:
-    - .:/repo_automator
-    container_name: celery_repo_container
-    depends_on:
-      - db
-      - redis
-      - app
+      - repo_api:/data/repo_api
+    restart: always
+
+  
+  pgadmin:
+    container_name: repo_pgadmin
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: a@a.com
+      PGADMIN_DEFAULT_PASSWORD: a
+    ports:
+      - "6050:80"
+
+
+volumes:
+  repo_api:

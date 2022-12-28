@@ -1,9 +1,10 @@
 import factory
 from django.contrib.auth import get_user_model
-
 from automate.models import Project
+from faker import Faker
 
 User = get_user_model()
+fake = Faker()
 
 
 class UserFactory(factory.django.DjangoModelFactory):
@@ -16,8 +17,8 @@ class UserFactory(factory.django.DjangoModelFactory):
         django_get_or_create = ("username",)
 
     password = factory.PostGenerationMethodCall("set_password", "pass")
-    username = "user1"
-    email = "user@email.com"
+    username = fake.name()
+    email = fake.email()
 
 
 class RepositoryFactory(factory.django.DjangoModelFactory):
@@ -32,5 +33,5 @@ class RepositoryFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("sentence", nb_words=10)
     primary_repo = factory.Faker("sentence", nb_words=4)
     secondary_repo = factory.Faker("sentence", nb_words=4)
-    primary_repo_url = "https://github.com/firstrepo.git"
-    secondary_repo_url = "https://github.com/secondrepo.git"
+    primary_repo_url = fake.url(schemes=['https'], domain_name='github.com')
+    secondary_repo_url = fake.url(schemes=['https'], domain_name='github.com')
