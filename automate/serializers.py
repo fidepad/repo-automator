@@ -18,9 +18,9 @@ class ProjectSerializer(serializers.ModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        repo = super.create(validated_data)
+        repo = super().create(validated_data)
         if not repo:
-            raise ValidationError({'error': 'this repo bundle was not initialized'})
+            raise serializers.ValidationError({'error': 'this repo bundle was not initialized'})
         try:
             repo_name = validated_data['primary_repo']
             repo_name = str(repo_name).split('/')
@@ -47,3 +47,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         owner = self.context.get("owner")
         attrs["owner"] = owner
         return attrs
+
+
+class WebHookSerializer(serializers.Serializer):
+    """Serializer to automate cloning process between repositories."""
+
+    def create(self, validated_data):
+        data = validated_data
+        data['message'] = 'successful'
+        return data
+
+    def to_representation(self, instance):
+        data = super(WebHookSerializer, self).to_representation(instance)
+        return instance

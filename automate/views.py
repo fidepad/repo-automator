@@ -1,8 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets
+from rest_framework import filters, viewsets, mixins
 from .filtersets import RepositoryFilter
 from .models import Project
-from .serializers import ProjectSerializer
+from .serializers import ProjectSerializer, WebHookSerializer
 
 
 class ProjectViewSets(viewsets.ModelViewSet):
@@ -41,3 +41,9 @@ class ProjectViewSets(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context["owner"] = self.request.user
         return context
+
+
+class WebHookViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
+    """Endpoint to begin Cloning of information"""
+    serializer_class = WebHookSerializer
+    queryset = Project.objects.all()
