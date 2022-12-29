@@ -7,6 +7,4 @@ app_name = "repository"
 router = SimpleRouter()
 router.register("", ProjectViewSets)
 
-urlpatterns = [
-    path('', include(router.urls))
-]
+urlpatterns = router.urls
