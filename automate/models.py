@@ -1,20 +1,8 @@
 from django.contrib.auth.models import User
 from django.db import models
 from django.utils.text import slugify
-
+from repo.models import BaseModel
 from automate.choices import RepoType
-
-
-class BaseModel(models.Model):
-    """Base Model to reduce redundant columns below."""
-
-    updated_at = models.DateTimeField(auto_now=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        """Meta class for Base Model."""
-
-        abstract = True
 
 
 class Project(BaseModel):
