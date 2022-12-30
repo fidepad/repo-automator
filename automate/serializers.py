@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from .models import Project
+from .models import Project, History
 from repo.utils import add_hook_to_repo, gen_hook_url
 
 
@@ -49,13 +49,25 @@ class ProjectSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class HeadSerializer(serializers.Serializer):
+    """Head serializer."""
+    ref = serializers.CharField()
+
+
+class PullRequestSerializer(serializers.Serializer):
+    """Pull Request Serializer."""
+    id = serializers.IntegerField()
+    url = serializers.URLField()
+    state = serializers.CharField()
+    title = serializers.CharField()
+    body = serializers.CharField()
+    head = HeadSerializer()
+
+
 class WebHookSerializer(serializers.Serializer):
     """Serializer to automate cloning process between repositories."""
-
-    def create(self, validated_data):
-        data = validated_data
-        data['message'] = 'successful'
-        return data
+    action = serializers.CharField()
+    pull_request = PullRequestSerializer()
 
     def to_representation(self, instance):
         data = super(WebHookSerializer, self).to_representation(instance)

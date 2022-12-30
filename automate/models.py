@@ -42,3 +42,16 @@ class Project(BaseModel):
 
     def __str__(self):
         return f"{self.name} Project"
+
+
+class History(BaseModel):
+    """History Model to retain payload information."""
+
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    pr_id = models.IntegerField()
+    action = models.CharField(max_length=30, null=True)
+    body = models.TextField()
+    url = models.URLField()
+    author = models.CharField(max_length=200)
+    merged_at = models.DateTimeField(null=True)
+    closed_at = models.DateTimeField(null=True)
