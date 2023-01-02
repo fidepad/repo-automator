@@ -2,11 +2,12 @@ from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from .models import Project, History
 from repo.utils import add_hook_to_repo, gen_hook_url
+from automate.gitremote import GitRemote
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
-    token = serializers.CharField(write_only=True)
+    # token = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField()
 
     class Meta:
@@ -69,6 +70,22 @@ class WebHookSerializer(serializers.Serializer):
     action = serializers.CharField()
     pull_request = PullRequestSerializer()
 
+    def clone_process(self, project, data):
+        """This method runs the cloning process. This should be moved into tasks."""
+        primary_access = "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" # Supposed to be coming from project
+        secondary_access = "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"
+        git = GitRemote(
+            primary_access=primary_access,
+            primary_url=project.primary_repo_url,
+            primary_type=project.primary_repo_type,
+            secondary_access=secondary_access,
+            secondary_url=project.secondary_repo_url,
+            secondary_type=project.secondary_repo_type,
+            project=project.slug,
+            branch_name=data.get("pull_request").get('head').get('ref')
+        )
+
     def to_representation(self, instance):
         data = super(WebHookSerializer, self).to_representation(instance)
-        return instance
+        self.clone_process(self.context.get('queryset'), data)
+        return data
