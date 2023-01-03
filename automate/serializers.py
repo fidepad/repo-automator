@@ -1,12 +1,11 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from .models import Project
-from repo.utils import add_hook_to_repo, gen_hook_url
+from .utils import add_hook_to_repo, gen_hook_url
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
-    token = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField()
 
     class Meta:
@@ -18,7 +17,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        repo = super.create(validated_data)
+        repo = super().create(**validated_data)
         if not repo:
             raise ValidationError({'error': 'this repo bundle was not initialized'})
         try:
@@ -28,15 +27,14 @@ class ProjectSerializer(serializers.ModelSerializer):
             repo_name = repo_name.split('.')[0]
         except ValueError as err:
             raise Exception(err)
-        host = gen_hook_url(username=validated_data['owner'].get('username'), repo_name=repo_name)
+        host = gen_hook_url(username=validated_data['owner'].username, repo_name=repo_name)
         if add_hook_to_repo(
             repo=repo_name,
-            hook=host,
+            host=host,
             owner=validated_data['owner'],
-            auth_token=validated_data['token']
+            auth_token="token"
         ):
             return repo
-        raise ValueError({'error': 'please reinitialize repository bundle'})
 
     def get_user(self, obj):
         """Gets the user information and returns the name and email address."""

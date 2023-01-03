@@ -26,11 +26,11 @@ class TestProject(APITestCase):
 
     def test_to_ensure_only_authenticated_users_can_access_endpoint(self):
         """Test to ensure user is logged in."""
-        with self.subTest("Accessing notification-list"):
+        with self.subTest("Accessing project-list"):
             response = self.client.get(self.url_list)
             self.assertEqual(response.status_code, 401)
 
-        with self.subTest("Accessing notification-detail"):
+        with self.subTest("Accessing project-list"):
             response = self.client.get(self.url_detail)
             content = response.data
             self.assertEqual(response.status_code, 401)
@@ -54,11 +54,12 @@ class TestProject(APITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(len(content) == 0)
 
-        with self.subTest("Ensuring name is providing when creating project"):
+        with self.subTest("Ensuring name is provided when creating project"):
             response = self.client.post(self.url_list, data=self.data)
             content = response.data
+            print(content)
             self.assertEqual(response.status_code, 400)
-            self.assertIn("name", content)
+            self.assertContains(content, "This field is required")
 
         with self.subTest("Creating new Project with a different user"):
             self.data["name"] = "primary repository to secondary repository"
