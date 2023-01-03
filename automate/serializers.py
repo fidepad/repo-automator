@@ -76,23 +76,17 @@ class WebHookSerializer(serializers.Serializer):
     action = serializers.CharField()
     pull_request = PullRequestSerializer()
 
-    def clone_process(self, project, data):
-        """This method runs the cloning process. This should be moved into tasks."""
-        primary_access = "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" # Supposed to be coming from project
-        secondary_access = "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"
+    def clone_push_make_pr(self, project, data):
+        """This method runs the cloning and pushing process. This should be moved into tasks."""
+        project.primary_access = "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" # Supposed to be coming from project
+        project.secondary_access = "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"
         git = GitRemote(
-            primary_access=primary_access,
-            primary_url=project.primary_repo_url,
-            primary_type=project.primary_repo_type,
-            secondary_access=secondary_access,
-            secondary_url=project.secondary_repo_url,
-            secondary_type=project.secondary_repo_type,
-            project=project.slug,
-            branch_name=data.get("pull_request").get('head').get('ref'),
-            repo=data.get("pull_request").get("head").get("repo").get("name")
+            instance=project,
+            data=data
         )
+        git.run()
 
     def to_representation(self, instance):
         data = super(WebHookSerializer, self).to_representation(instance)
-        self.clone_process(self.context.get('queryset'), data)
+        self.clone_push_make_pr(self.context.get('queryset'), data)
         return data
