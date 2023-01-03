@@ -50,9 +50,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         return attrs
 
 
+class RepoSerializer(serializers.Serializer):
+    """Serializer for the Repository."""
+    name = serializers.CharField()
+
+
 class HeadSerializer(serializers.Serializer):
     """Head serializer."""
     ref = serializers.CharField()
+    repo = RepoSerializer()
 
 
 class PullRequestSerializer(serializers.Serializer):
@@ -61,7 +67,7 @@ class PullRequestSerializer(serializers.Serializer):
     url = serializers.URLField()
     state = serializers.CharField()
     title = serializers.CharField()
-    body = serializers.CharField()
+    body = serializers.CharField(read_only=True)
     head = HeadSerializer()
 
 
@@ -82,7 +88,8 @@ class WebHookSerializer(serializers.Serializer):
             secondary_url=project.secondary_repo_url,
             secondary_type=project.secondary_repo_type,
             project=project.slug,
-            branch_name=data.get("pull_request").get('head').get('ref')
+            branch_name=data.get("pull_request").get('head').get('ref'),
+            repo=data.get("pull_request").get("head").get("repo").get("name")
         )
 
     def to_representation(self, instance):

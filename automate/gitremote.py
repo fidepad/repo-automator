@@ -12,7 +12,7 @@ secondary_url = ""
 class GitRemote:
     """Git Remote Class to handle all git related activities."""
 
-    def __init__(self, primary_access, primary_url, branch_name, secondary_access, secondary_url, project, primary_type, secondary_type):
+    def __init__(self, primary_access, primary_url, branch_name, secondary_access, secondary_url, project, primary_type, secondary_type, repo):
         """The initialization point of the git remote class."""
         self.primary_access = primary_access
         self.primary_url = primary_url
@@ -22,6 +22,7 @@ class GitRemote:
         self.secondary_url = secondary_url
         self.secondary_type = secondary_type
         self.project = self.make_directory(project)
+        self.repo = repo
 
         self.run()
 
@@ -51,7 +52,10 @@ class GitRemote:
 
     def clone(self):
         """This function clones the primary repository into a temporary folder."""
-        repository = Repo.clone_from(self.primary_url, self.project)
+        # Todo: Create a username field for both primary and secondary repo
+        # Todo: Change kramstyles to primary username
+        clone_from = f"https://{self.primary_access}@github.com/kramstyles/{self.repo}"
+        repository = Repo.clone_from(clone_from, self.project)
         return repository
 
     def checkout(self):
