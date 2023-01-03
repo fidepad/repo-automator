@@ -57,8 +57,9 @@ class TestProject(APITestCase):
         with self.subTest("Ensuring name is provided when creating project"):
             response = self.client.post(self.url_list, data=self.data)
             content = response.data
+            print(content)
             self.assertEqual(response.status_code, 400)
-            self.assertIn("name", content)
+            self.assertContains(content, "This field is required")
 
         with self.subTest("Creating new Project with a different user"):
             self.data["name"] = "primary repository to secondary repository"
