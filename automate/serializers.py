@@ -67,7 +67,7 @@ class PullRequestSerializer(serializers.Serializer):
     url = serializers.URLField()
     state = serializers.CharField()
     title = serializers.CharField()
-    body = serializers.CharField(read_only=True)
+    body = serializers.CharField()
     head = HeadSerializer()
 
 

@@ -1,6 +1,8 @@
 import os
 import tempfile
 
+import requests
+
 from git import Repo
 
 
@@ -16,35 +18,11 @@ class GitRemote:
         self.branch_name = data["pull_request"]['head']['ref']
         self.secondary_access = instance.secondary_access
         self.secondary_url = instance.secondary_repo_url
+        self.secondary_repo = instance.secondary_repo.replace(" ", "-").lower()
         self.secondary_type = instance.secondary_repo_type
         self.repo = data["pull_request"]["head"]["repo"]["name"]
-
-    def make_directory(self, project):
-        """This function exists to create a temporary directory for the project and return the address."""
-        with tempfile.TemporaryDirectory() as parent_dir:
-
-            # path = os.path.join(parent_dir, "projects")
-            # try:
-            #     os.mkdir(path=path)
-            # except FileExistsError:
-            #     pass
-            
-            # This handles creating temporary directory
-            try:
-                path = os.path.join(parent_dir, project)
-                os.mkdir(path=path)
-                self.project = path
-                self.run()
-            except FileExistsError:
-                pass
-
-                # Had to remove the code below because it demands for permission
-                # shutil.rmtree(path=path)
-                # os.mkdir(path=path)
-            # except FileNotFoundError:
-            #     pass
-
-            return path
+        self.title = data["pull_request"]["title"]
+        self.body = data["pull_request"]["body"]
 
     def clone(self, temp_dir):
         """This function clones the primary repository into a temporary folder."""
@@ -66,8 +44,30 @@ class GitRemote:
         secondary.push()
         # Todo: Create and remove context directory. Also see if it's possible to create online branch here
 
+    def make_pr(self):
+        """THis method handles the creating of a new PR in the secondary repository."""
+        headers = {
+            "Authorization": f"Bearer {self.secondary_access}",
+            "X-GitHub-Api-Version": "2022-11-28"
+        }
+        # Todo: Add base to the project
+        data = {
+            "title": self.title,
+            "body": self.body,
+            "head": self.branch_name,
+            "base": "main"
+        }
+        # Todo: Add check to only push if pr is closed
+        # Todo: add owner for secondary repository
+
+        api_url = f"https://api.github.com/repos/kramstyles/{self.secondary_repo}/pulls"
+        response = requests.post(api_url, headers=headers, json=data)
+        status = response.status_code
+
+
     def run(self):
         with tempfile.TemporaryDirectory() as parent_dir:
             self.clone(parent_dir)
             self.checkout()
             self.push()
+            self.make_pr()
