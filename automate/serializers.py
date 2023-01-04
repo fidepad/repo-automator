@@ -78,8 +78,8 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        project.primary_access = "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" # Supposed to be coming from project
-        project.secondary_access = "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"
+        # project.primary_access = "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" # Supposed to be coming from project
+        # project.secondary_access = "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"
         git = GitRemote(
             instance=project,
             data=data
