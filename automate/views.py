@@ -2,9 +2,8 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets, status, response
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from .filtersets import RepositoryFilter
-from .models import Project, History
+from .models import Project
 from .serializers import ProjectSerializer, WebHookSerializer
 
 
@@ -48,7 +47,9 @@ class ProjectViewSets(viewsets.ModelViewSet):
     @action(detail=False, methods=["POST"], url_path="(?P<slug>[\w-]+)/webhook")
     def webhook(self, request, slug):
         queryset = get_object_or_404(Project, slug=slug)
-        serializer = WebHookSerializer(data=request.data, context={"queryset": queryset})
+        serializer = WebHookSerializer(
+            data=request.data, context={"queryset": queryset}
+        )
         serializer.is_valid(raise_exception=True)
         # THis line would hold the util function
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)

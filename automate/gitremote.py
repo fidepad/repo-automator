@@ -1,4 +1,3 @@
-import os
 import tempfile
 
 import requests
@@ -67,6 +66,7 @@ class GitRemote:
         api_url = f"https://api.github.com/repos/kramstyles/{self.secondary_repo}/pulls"
         response = requests.post(api_url, headers=headers, json=data)
         status = response.status_code
+        print(status)
         # Todo: use the response to populate history
 
     def run(self):

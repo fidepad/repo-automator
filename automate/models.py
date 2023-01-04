@@ -14,7 +14,9 @@ class Project(BaseModel):
         help_text="Name of task or project i.e copy from parent to child",
         unique=True,
     )
-    primary_username = models.CharField(max_length=200, help_text="The git username for the primary repository")
+    primary_username = models.CharField(
+        max_length=200, help_text="The git username for the primary repository"
+    )
     primary_repo = models.CharField(
         max_length=100, help_text="Name of original repository"
     )
@@ -24,12 +26,16 @@ class Project(BaseModel):
     primary_repo_type = models.CharField(
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
-    primary_token = models.TextField(help_text="Primary Access token to make PR changes")
+    primary_token = models.TextField(
+        help_text="Primary Access token to make PR changes"
+    )
     secondary_repo = models.CharField(
         max_length=100,
         help_text="Name of repository that new changes would be pushed to",
     )
-    secondary_username = models.CharField(max_length=200, help_text="The git username for the secondary repository")
+    secondary_username = models.CharField(
+        max_length=200, help_text="The git username for the secondary repository"
+    )
     secondary_repo_url = models.CharField(
         max_length=500,
         help_text="The url repository that new changes would be pushed to",
@@ -37,9 +43,14 @@ class Project(BaseModel):
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
     )
-    secondary_token = models.TextField(help_text="Secondary Access token to make PR changes")
+    secondary_token = models.TextField(
+        help_text="Secondary Access token to make PR changes"
+    )
     slug = models.SlugField(max_length=250, unique=True, blank=True)
-    base = models.CharField(max_length=200, help_text="The branch you want to target with PR changes. i.e., main")
+    base = models.CharField(
+        max_length=200,
+        help_text="The branch you want to target with PR changes. i.e., main",
+    )
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

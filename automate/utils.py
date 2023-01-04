@@ -1,6 +1,7 @@
 import requests
 import json
-from cryptography.fernet import Fernet
+
+# from cryptography.fernet import Fernet
 
 
 class Crypt:

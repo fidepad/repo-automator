@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
 from .models import Project
 from .utils import add_hook_to_repo, gen_hook_url
 from automate.gitremote import GitRemote
@@ -7,6 +6,7 @@ from automate.gitremote import GitRemote
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
+
     # token = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField()
 
@@ -22,20 +22,21 @@ class ProjectSerializer(serializers.ModelSerializer):
         repo = super().create(**validated_data)
 
         if not repo:
-            raise serializers.ValidationError({'error': 'this repo bundle was not initialized'})
+            raise serializers.ValidationError(
+                {"error": "this repo bundle was not initialized"}
+            )
         try:
-            repo_name = validated_data['primary_repo']
-            repo_name = str(repo_name).split('/')
+            repo_name = validated_data["primary_repo"]
+            repo_name = str(repo_name).split("/")
             repo_name = repo_name[-1]
-            repo_name = repo_name.split('.')[0]
+            repo_name = repo_name.split(".")[0]
         except ValueError as err:
             raise Exception(err)
-        host = gen_hook_url(username=validated_data['owner'].username, repo_name=repo_name)
+        host = gen_hook_url(
+            username=validated_data["owner"].username, repo_name=repo_name
+        )
         if add_hook_to_repo(
-            repo=repo_name,
-            host=host,
-            owner=validated_data['owner'],
-            auth_token="token"
+            repo=repo_name, host=host, owner=validated_data["owner"], auth_token="token"
         ):
             return repo
 
@@ -52,17 +53,20 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class RepoSerializer(serializers.Serializer):
     """Serializer for the Repository."""
+
     name = serializers.CharField()
 
 
 class HeadSerializer(serializers.Serializer):
     """Head serializer."""
+
     ref = serializers.CharField()
     repo = RepoSerializer()
 
 
 class PullRequestSerializer(serializers.Serializer):
     """Pull Request Serializer."""
+
     id = serializers.IntegerField()
     url = serializers.URLField()
     state = serializers.CharField()
@@ -73,6 +77,7 @@ class PullRequestSerializer(serializers.Serializer):
 
 class WebHookSerializer(serializers.Serializer):
     """Serializer to automate cloning process between repositories."""
+
     action = serializers.CharField()
     pull_request = PullRequestSerializer()
 
@@ -80,13 +85,10 @@ class WebHookSerializer(serializers.Serializer):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
         # project.primary_access = "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" # Supposed to be coming from project
         # project.secondary_access = "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"
-        git = GitRemote(
-            instance=project,
-            data=data
-        )
+        git = GitRemote(instance=project, data=data)
         git.run()
 
     def to_representation(self, instance):
         data = super(WebHookSerializer, self).to_representation(instance)
-        self.clone_push_make_pr(self.context.get('queryset'), data)
+        self.clone_push_make_pr(self.context.get("queryset"), data)
         return data
