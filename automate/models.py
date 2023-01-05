@@ -69,6 +69,7 @@ class History(BaseModel):
     body = models.TextField()
     url = models.URLField()
     author = models.CharField(max_length=200)
+    comments = models.IntegerField(default=0)
     merged_at = models.DateTimeField(null=True)
     closed_at = models.DateTimeField(null=True)
 
