@@ -51,5 +51,4 @@ class ProjectViewSets(viewsets.ModelViewSet):
             data=request.data, context={"queryset": queryset}
         )
         serializer.is_valid(raise_exception=True)
-        # THis line would hold the util function
         return response.Response(serializer.data, status=status.HTTP_201_CREATED)
