@@ -71,3 +71,6 @@ class History(BaseModel):
     author = models.CharField(max_length=200)
     merged_at = models.DateTimeField(null=True)
     closed_at = models.DateTimeField(null=True)
+
+    def __str__(self):
+        return f"{self.project}: {self.action}"

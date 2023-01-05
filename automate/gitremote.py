@@ -1,8 +1,11 @@
 import tempfile
+import json
 
 import requests
 
 from git import Repo
+
+from automate.models import History
 
 
 class GitRemote:
@@ -27,11 +30,13 @@ class GitRemote:
         self.title = data["pull_request"]["title"]
         self.body = data["pull_request"]["body"]
         self.action = data["action"]
+        self.project = instance
 
     def clone(self, temp_dir):
         """This function clones the primary repository into a temporary folder."""
-        clone_from = (
-            f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"
+        # clone_from = f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"
+        clone_from = self.primary_url.replace(
+            "https://", f"https://oauth2:{self.primary_access}@"
         )
         self.repository = Repo.clone_from(clone_from, temp_dir)
 
@@ -43,11 +48,26 @@ class GitRemote:
         """This function pushes the code to the secondary url"""
         if self.secondary_type == "github":
             push_to = self.secondary_url.replace(
-                "https://", f"https://{self.secondary_access}@"
+                "https://", f"https://oauth2:{self.secondary_access}@"
             )
             self.repository.create_remote("secondary", push_to)
             secondary = self.repository.remote("secondary")
             secondary.push()
+
+    def populate_history(self, content):
+        # This function populates the history of PRs
+        if content:
+            content = json.loads(content)
+            History.objects.create(
+                project=self.project,
+                pr_id=content.get("id"),
+                action=content.get("state"),
+                body=content.get("body"),
+                url=content.get("url"),
+                author=content["user"]["login"],
+                merged_at=content.get("merged_at"),
+                closed_at=content.get("closed_at"),
+            )
 
     def make_pr(self):
         """THis method handles the creating of a new PR in the secondary repository."""
@@ -63,11 +83,11 @@ class GitRemote:
             "base": self.base,
         }
 
-        api_url = f"https://api.github.com/repos/kramstyles/{self.secondary_repo}/pulls"
+        api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
         response = requests.post(api_url, headers=headers, json=data)
         status = response.status_code
-        print(status)
-        # Todo: use the response to populate history
+        if status == 201:
+            self.populate_history(response.content)
 
     def run(self):
         if self.action == "closed":
