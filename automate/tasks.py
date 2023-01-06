@@ -16,11 +16,9 @@ def check_new_comments():
         for pr in open_pr:
             if pr.project.secondary_repo_type == "github":
                 comments = pr.comments
-                header = {
-                    "Authorization": f"Bearer {pr.project.secondary_token}"
-                }
+                header = {"Authorization": f"Bearer {pr.project.secondary_token}"}
                 # Get the number of comments existing in the PR online
-                response = requests.get(pr.url+"/comments", headers=header)
+                response = requests.get(pr.url + "/comments", headers=header)
                 content = json.loads(response.content)
                 new_comments = len(content)
 
@@ -32,17 +30,19 @@ def check_new_comments():
                     # content = content[new_comments - comments:]
                     for comment in content:
                         data = {
-                                "body": comment["body"],
-                                "position": comment["position"],
-                                "commit_id": comment["commit_id"],
-                                "path": comment["path"],
-                                "start_line": comment["start_line"],
-                                "start_side": comment["start_side"],
-                                "line": comment["line"],
-                                "side": comment["side"]
-                            }
+                            "body": comment["body"],
+                            "position": comment["position"],
+                            "commit_id": comment["commit_id"],
+                            "path": comment["path"],
+                            "start_line": comment["start_line"],
+                            "start_side": comment["start_side"],
+                            "line": comment["line"],
+                            "side": comment["side"],
+                        }
                         try:
-                            response = requests.post(primary_url, json=data, headers=header)
+                            response = requests.post(
+                                primary_url, json=data, headers=header
+                            )
                             status = response.status_code
                             if status == 201:
                                 # Increment comments

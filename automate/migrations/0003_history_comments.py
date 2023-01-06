@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('automate', '0002_auto_20230104_1220'),
+        ("automate", "0002_auto_20230104_1220"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='history',
-            name='comments',
+            model_name="history",
+            name="comments",
             field=models.IntegerField(default=0),
         ),
     ]

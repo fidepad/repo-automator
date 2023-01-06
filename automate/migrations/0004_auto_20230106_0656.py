@@ -6,19 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('automate', '0003_history_comments'),
+        ("automate", "0003_history_comments"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='history',
-            name='primary_url',
-            field=models.URLField(default='https://api.github.com/repos/KramStyles/pacesetter-utils/pulls/2', help_text='url link for the initial PR'),
+            model_name="history",
+            name="primary_url",
+            field=models.URLField(
+                default="https://api.github.com/repos/KramStyles/pacesetter-utils/pulls/2",
+                help_text="url link for the initial PR",
+            ),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='history',
-            name='url',
-            field=models.URLField(help_text='url link for the new PR'),
+            model_name="history",
+            name="url",
+            field=models.URLField(help_text="url link for the new PR"),
         ),
     ]
