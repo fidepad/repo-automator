@@ -21,11 +21,30 @@ def check_new_comments():
                 # Get the number of comments existing in the PR online
                 response = requests.get(pr.url+"/comments", headers=header)
                 content = json.loads(response.content)
+                new_comments = len(content)
 
                 # Next we check if the length of the content (comments) matches the comment field
-                if comments != len(content):
+                if comments != new_comments:
                     # Update the primary PR
-                    primary_pr = pr.project.primary_repo_url # Todo: Find a way to get the primary pull url from the webhook url
+                    primary_url = pr.primary_url + "/comments"
                     for comment in content:
-                        print(comment["url"])
+                        data = {
+                                # "owner": pr.project.primary_username,
+                                # "repo": pr.project.primary_repo,
+                                # "pull_number": pr.pr_id,
+                                "body": comment["body"],
+                                "position": comment["position"],
+                                "commit_id": comment["commit_id"],
+                                "path": comment["path"],
+                                "start_line": comment["start_line"],
+                                "start_side": comment["start_side"],
+                                "line": comment["line"],
+                                "side": comment["side"]
+                            }
+                        try:
+                            response = requests.post(primary_url, json=data, headers=header)
+                            status = response.status_code
+                        except Exception as err:
+                            print(err)  # Todo: Perform logging function here
+
                 print(pr.action)

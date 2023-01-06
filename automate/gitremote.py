@@ -30,6 +30,7 @@ class GitRemote:
         self.title = data["pull_request"]["title"]
         self.body = data["pull_request"]["body"]
         self.action = data["action"]
+        self.pr_url = data["pull_request"]["url"]
         self.project = instance
 
     def clone(self, temp_dir):
@@ -60,9 +61,10 @@ class GitRemote:
             content = json.loads(content)
             History.objects.create(
                 project=self.project,
-                pr_id=content.get("id"),
+                pr_id=content.get("number"),
                 action=content.get("state"),
                 body=content.get("body"),
+                primary_url=self.pr_url,
                 url=content.get("url"),
                 author=content["user"]["login"],
                 merged_at=content.get("merged_at"),
