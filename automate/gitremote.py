@@ -61,7 +61,7 @@ class GitRemote:
             content = json.loads(content)
             History.objects.create(
                 project=self.project,
-                pr_id=content.get("number"),
+                pr_id=content.get("id"),
                 action=content.get("state"),
                 body=content.get("body"),
                 primary_url=self.pr_url,
@@ -72,10 +72,9 @@ class GitRemote:
             )
 
     def make_pr(self):
-        """THis method handles the creating of a new PR in the secondary repository."""
+        """This method handles the creating of a new PR in the secondary repository."""
         headers = {
             "Authorization": f"Bearer {self.secondary_access}",
-            "X-GitHub-Api-Version": "2022-11-28",
         }
 
         data = {

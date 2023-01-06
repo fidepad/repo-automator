@@ -5,9 +5,8 @@ from automate.gitremote import GitRemote
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """Repository Serializer."""
+    """Project Serializer."""
 
-    # token = serializers.CharField(write_only=True)
     user = serializers.SerializerMethodField()
 
     class Meta:
@@ -58,7 +57,7 @@ class RepoSerializer(serializers.Serializer):
 
 
 class HeadSerializer(serializers.Serializer):
-    """Head serializer."""
+    """Head Serializer for the project that contains information about the branch and the repository."""
 
     ref = serializers.CharField()
     repo = RepoSerializer()
@@ -67,7 +66,7 @@ class HeadSerializer(serializers.Serializer):
 class PullRequestSerializer(serializers.Serializer):
     """Pull Request Serializer."""
 
-    number = serializers.IntegerField()
+    id = serializers.IntegerField()
     url = serializers.URLField()
     state = serializers.CharField()
     title = serializers.CharField()

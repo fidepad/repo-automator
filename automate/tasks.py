@@ -5,6 +5,7 @@ import requests
 
 from automate.models import History
 
+
 @shared_task()
 def check_new_comments():
     # I'd get all Open PRs that have not been closed
@@ -24,14 +25,13 @@ def check_new_comments():
                 new_comments = len(content)
 
                 # Next we check if the length of the content (comments) matches the comment field
-                if comments != new_comments:
+                if comments < new_comments:
                     # Update the primary PR
                     primary_url = pr.primary_url + "/comments"
+                    # Reduce comments so it only runs a loop for new comments
+                    # content = content[new_comments - comments:]
                     for comment in content:
                         data = {
-                                # "owner": pr.project.primary_username,
-                                # "repo": pr.project.primary_repo,
-                                # "pull_number": pr.pr_id,
                                 "body": comment["body"],
                                 "position": comment["position"],
                                 "commit_id": comment["commit_id"],
@@ -44,6 +44,10 @@ def check_new_comments():
                         try:
                             response = requests.post(primary_url, json=data, headers=header)
                             status = response.status_code
+                            if status == 201:
+                                # Increment comments
+                                pr.comments = comments + 1
+                                pr.save()
                         except Exception as err:
                             print(err)  # Todo: Perform logging function here
 

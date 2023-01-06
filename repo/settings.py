@@ -26,8 +26,7 @@ SECRET_KEY = config("SECRET_KEY", default=get_random_secret_key(), cast=str)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=True)
-
-ALLOWED_HOSTS = ["localhost", "7848-105-113-35-95.eu.ngrok.io"]
+ALLOWED_HOSTS = ["localhost", config("EXTRA_HOST", cast=str, default="sitename.com")]
 
 
 # Application definition
@@ -162,5 +161,5 @@ REST_KNOX = {
     "AUTO_REFRESH": False,
 }
 
-# CELERY_BROKER_URL = "redis://redis:6379"
-# CELERY_RESULT_BACKEND = "redis://redis:6379"
+CELERY_BROKER_URL = "redis://redis:6379"
+CELERY_RESULT_BACKEND = "redis://redis:6379"
