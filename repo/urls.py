@@ -20,7 +20,6 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
-from knox import views as knox_views
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -29,8 +28,6 @@ urlpatterns = [
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(), name="swagger"),
     path("redoc/", SpectacularRedocView.as_view(), name="redoc"),
-    # Knox Endpoints
-    path("auth/login/", knox_views.LoginView.as_view(), name="login"),
-    path(r"auth/logout/", knox_views.LogoutView.as_view(), name="logout"),
-    path(r"auth/logoutall/", knox_views.LogoutAllView.as_view(), name="logoutall"),
+    # Repo Automator Core URL
+    path("", include("repo.api.urls")),
 ]

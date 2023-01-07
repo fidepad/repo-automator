@@ -2,7 +2,8 @@ from django.shortcuts import reverse
 from django.utils.text import slugify
 from rest_framework.test import APITestCase
 
-from automate.factories import RepositoryFactory, UserFactory
+from automate.factories import RepositoryFactory
+from accounts.factories import UserFactory
 
 
 class TestProject(APITestCase):

@@ -1,24 +1,13 @@
 import factory
 from django.contrib.auth import get_user_model
+
+from accounts.factories import UserFactory
 from automate.models import Project
 from faker import Faker
 
+
 User = get_user_model()
 fake = Faker()
-
-
-class UserFactory(factory.django.DjangoModelFactory):
-    """User Factory."""
-
-    class Meta:
-        """User Factory Meta Class."""
-
-        model = User
-        django_get_or_create = ("username",)
-
-    password = factory.PostGenerationMethodCall("set_password", "pass")
-    username = fake.name()
-    email = fake.email()
 
 
 class RepositoryFactory(factory.django.DjangoModelFactory):

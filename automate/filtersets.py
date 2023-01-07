@@ -11,4 +11,4 @@ class RepositoryFilter(FilterSet):
 
         model = Project
         # fmt: off
-        fields = ["owner__email", "owner__username", "owner", "primary_repo", "secondary_repo", "slug", "name"]
+        fields = ["owner__email", "owner", "primary_repo", "secondary_repo", "slug", "name"]
