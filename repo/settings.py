@@ -57,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "repo.middleware.CommonMiddleware",
 ]
 
 ROOT_URLCONF = "repo.urls"
@@ -167,7 +168,7 @@ REST_KNOX = {
 # CELERY_RESULT_BACKEND = "redis://redis:6379"
 
 GITHUB_BASE_URL = "https://api.github.com"
-GITHUB_URL = GITHUB_BASE_URL + "/repos/{owner}/{repo}/"
+BITBUCKET_BASE_URL = "https://api.bitbucket.org/2.0"
 
 
 # Custom User

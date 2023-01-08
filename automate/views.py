@@ -1,5 +1,8 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
+from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .filtersets import RepositoryFilter
 from .models import Project
 from .serializers import ProjectSerializer
@@ -41,3 +44,8 @@ class ProjectViewSets(viewsets.ModelViewSet):
         context = super().get_serializer_context()
         context["owner"] = self.request.user
         return context
+
+    @action(detail=False, methods=["POST"], url_path="(?P<slug>[\w-]+)/webhook")
+    def webhook(self, request, *args, **kwargs):
+        # TODO: Trigger a git PR clone
+        return Response({})

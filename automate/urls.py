@@ -1,8 +1,7 @@
 from rest_framework.routers import SimpleRouter
-from django.urls import path, include
 from automate.views import ProjectViewSets
 
-app_name = "repository"
+app_name = "project"
 
 router = SimpleRouter()
 router.register("", ProjectViewSets)

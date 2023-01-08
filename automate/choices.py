@@ -1,7 +1,7 @@
 from django.db import models
 
 
-class RepoType(models.TextChoices):
+class RepoTypeChoices(models.TextChoices):
     """Repository Types."""
 
     GITHUB = "github", "Github"

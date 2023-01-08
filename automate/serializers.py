@@ -1,40 +1,36 @@
 from rest_framework import serializers
-from django.core.exceptions import ValidationError
+from rest_framework.reverse import reverse
+
 from .models import Project
-from .utils import add_hook_to_repo, gen_hook_url
+from .utils import add_hook_to_repo
 
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Repository Serializer."""
+
     user = serializers.SerializerMethodField()
 
     class Meta:
-        """Meta class for Repository Serializer."""
+        """Metaclass for Repository Serializer."""
 
         model = Project
-        exclude = ["created_at", "updated_at"]
         lookup_field = "slug"
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        repo = super().create(**validated_data)
-        if not repo:
-            raise ValidationError({'error': 'this repo bundle was not initialized'})
-        try:
-            repo_name = validated_data['primary_repo']
-            repo_name = str(repo_name).split('/')
-            repo_name = repo_name[-1]
-            repo_name = repo_name.split('.')[0]
-        except ValueError as err:
-            raise Exception(err)
-        host = gen_hook_url(username=validated_data['owner'].username, repo_name=repo_name)
-        if add_hook_to_repo(
-            repo=repo_name,
-            host=host,
-            owner=validated_data['owner'],
-            auth_token="token"
-        ):
-            return repo
+        project = super().create(**validated_data)
+
+        domain = self.context["request"].domain
+        path = reverse("project:project-webhook", args=(project.slug,))
+        project_webhook_url = domain + path
+
+        add_hook_to_repo(
+            project_webhook_url=project_webhook_url,
+            webhook_url=self.instance.primary_repo_webhook_url,
+            repo_type=self.instance.primary_repo_type,
+            repo_token=self.instance.primary_repo_token,
+        )
+        return project
 
     def get_user(self, obj):
         """Gets the user information and returns the name and email address."""

@@ -22,5 +22,5 @@ class RepositoryFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("sentence", nb_words=10)
     primary_repo = factory.Faker("sentence", nb_words=4)
     secondary_repo = factory.Faker("sentence", nb_words=4)
-    primary_repo_url = fake.url(schemes=['https'])
-    secondary_repo_url = fake.url(schemes=['https'])
+    primary_repo_url = fake.url(schemes=["https"])
+    secondary_repo_url = fake.url(schemes=["https"])
