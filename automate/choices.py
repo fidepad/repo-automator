@@ -5,4 +5,4 @@ class RepoTypeChoices(models.TextChoices):
     """Repository Types."""
 
     GITHUB = "github", "Github"
-    GITBUCKET = "gitbucket", "Gitbucket"
+    BITBUCKET = "bitbucket", "Bitbucket"

@@ -40,4 +40,5 @@ class ProjectSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         owner = self.context.get("owner")
         attrs["owner"] = owner
+        # TODO: Validate the owner/token/repo name are all correct and can connect to Repository
         return attrs

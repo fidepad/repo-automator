@@ -2,7 +2,7 @@ from django.shortcuts import reverse
 from django.utils.text import slugify
 from rest_framework.test import APITestCase
 
-from automate.factories import RepositoryFactory
+from automate.factories import ProjectFactory
 from accounts.factories import UserFactory
 
 
@@ -11,7 +11,7 @@ class TestProject(APITestCase):
 
     def setUp(self) -> None:
         self.user = UserFactory()
-        self.repo1 = RepositoryFactory(owner=self.user)
+        self.repo1 = ProjectFactory(owner=self.user)
         self.data = {
             "primary_repo": "Primary Repository",
             "primary_repo_url": "https://github.com/primary-repo.git",
