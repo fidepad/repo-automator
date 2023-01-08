@@ -2,6 +2,7 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from accounts.serializers import UserSerializer
+
 from .models import Project
 from .utils import add_hook_to_repo
 
@@ -32,7 +33,6 @@ class ProjectSerializer(serializers.ModelSerializer):
             repo_type=project.primary_repo_type,
             repo_token=project.primary_repo_token,
         )
-        print(add_hook_to_repo)
         return project
 
     def validate(self, attrs):

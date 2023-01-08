@@ -2,7 +2,6 @@ import factory
 from django.contrib.auth import get_user_model
 from faker import Faker
 
-
 User = get_user_model()
 fake = Faker()
 

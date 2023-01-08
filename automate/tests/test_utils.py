@@ -10,12 +10,12 @@ from repo.testing.model import BaseModelTestCase
 
 
 class ProjectUtilsTestCase(BaseModelTestCase):
-    """Test class for Project utils"""
+    """Test class for Project utils."""
 
     @patch("automate.utils.requests.post")
     def test_add_hook_to_repo(self, post_mock):
+        """Assert add_hook_to_repo is called with the expected data."""
         # Assert for GitHub
-        print(post_mock)
         with self.subTest("Assert GitHub Webhook creation"):
             project = ProjectFactory(
                 primary_repo_owner="fidepad",

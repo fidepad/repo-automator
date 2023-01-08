@@ -10,9 +10,9 @@ class BaseAPITestCase(BaseModelTestCase, APITestCase):
     """Base test class for API tests.
 
     This class serves as a base for all API test classes and provides
-    common functionality that can be used across all tests, such as helper
-    methods for making API requests and assert functions for validating
-    the responses.
+    common functionality that can be used across all tests, such as
+    helper methods for making API requests and assert functions for
+    validating the responses.
     """
 
     headers = {}
@@ -31,11 +31,13 @@ class BaseAPITestCase(BaseModelTestCase, APITestCase):
 
     @staticmethod
     def get_token_for_user(user):
+        """Create and return a token for `user`"""
         _, token = AuthToken.objects.create(user, knox_settings.TOKEN_TTL)
         return token
 
     def authenticate_client(self, user):
-        """Authenticates the given user and returns an authenticated APIClient object.
+        """Authenticates the given user and returns an authenticated APIClient
+        object.
 
         Parameters:
             user (User): The user to authenticate.

@@ -6,9 +6,10 @@ from repo.testing.model import BaseModelTestCase
 
 
 class ProjectTestCase(BaseModelTestCase):
-    """Test class for Project model"""
+    """Test class for Project model."""
 
     def test_primary_repo_webhook_url(self):
+        """Test Project primary_repo_webhook_url method."""
         # Assert for GitHub
         project = ProjectFactory(primary_repo_type=RepoTypeChoices.GITHUB)
         self.assertEqual(

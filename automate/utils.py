@@ -1,15 +1,23 @@
+import json
 import logging
 
 import requests
-import json
 
 from automate.choices import RepoTypeChoices
-
 
 logger = logging.getLogger(__name__)
 
 
+# pylint: disable=duplicate-code
 def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
+    """Add a webhook to a repository.
+
+    Parameters:
+        project_webhook_url (str): The URL of the webhook to be added to the repository.
+        webhook_url (str): The URL of the repository's webhooks API endpoint.
+        repo_type (RepoTypeChoices): The type of repository (GitHub or Bitbucket).
+        repo_token (str): The token for authenticating the request to the repository's webhooks API.
+    """
     if repo_type == RepoTypeChoices.GITHUB:
         payload = {
             "name": "web",
@@ -46,4 +54,9 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
     # TODO: Would be nice to add this to an Activity Log, This way you know what fails
     #  and what passes. So that you can retry again.
     #  Also, Log status code
-    requests.post(webhook_url, data=json.dumps(payload), headers=headers)
+    requests.post(
+        webhook_url,
+        data=json.dumps(payload),
+        headers=headers,
+        timeout=3000,
+    )

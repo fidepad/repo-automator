@@ -8,7 +8,7 @@ User = get_user_model()
 
 
 class RepoLoginView(LoginView):
-    """Endpoint used in generating access token for a user"""
+    """Endpoint used in generating access token for a user."""
 
     permission_classes = (AllowAny,)
     serializer_class = AuthTokenSerializer

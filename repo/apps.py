@@ -7,4 +7,4 @@ class CoreConfig(AppConfig):
     default_auto_field = "django.db.models.BigAutoField"
 
     def ready(self):
-        import repo.authentication
+        import repo.authentication  # noqa: F401

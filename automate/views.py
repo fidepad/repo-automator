@@ -45,7 +45,9 @@ class ProjectViewSets(viewsets.ModelViewSet):
         context["owner"] = self.request.user
         return context
 
+    # pylint: disable=unused-argument,
     @action(detail=False, methods=["POST"], url_path="(?P<slug>[\w-]+)/webhook")
     def webhook(self, request, *args, **kwargs):
+        """Endpoint which triggers a PR clone task."""
         # TODO: Trigger a git PR clone
         return Response({})

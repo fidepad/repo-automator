@@ -2,9 +2,9 @@ from unittest.mock import patch
 
 from django.shortcuts import reverse
 
+from accounts.factories import UserFactory
 from automate.choices import RepoTypeChoices
 from automate.factories import ProjectFactory
-from accounts.factories import UserFactory
 from automate.models import Project
 from repo.testing.api import BaseAPITestCase
 
@@ -64,6 +64,7 @@ class ProjectAPITestCase(BaseAPITestCase):
 
     @patch("automate.serializers.add_hook_to_repo")
     def test_create_project(self, add_hook_to_repo_mock):
+        """Test creating of a project."""
         response = self.client.post(self.url_list, data=self.data)
         self.assertEqual(response.status_code, 201)
         project = Project.objects.get(id=response.data["id"])

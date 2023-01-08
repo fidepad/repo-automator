@@ -2,9 +2,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import slugify
-from repo.models import BaseModel
-from automate.choices import RepoTypeChoices
 
+from automate.choices import RepoTypeChoices
+from repo.models import BaseModel
 
 User = get_user_model()
 

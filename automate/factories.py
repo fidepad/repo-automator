@@ -1,11 +1,10 @@
 import factory
 from django.contrib.auth import get_user_model
+from faker import Faker
 
 from accounts.factories import UserFactory
 from automate.choices import RepoTypeChoices
 from automate.models import Project
-from faker import Faker
-
 
 User = get_user_model()
 fake = Faker()
