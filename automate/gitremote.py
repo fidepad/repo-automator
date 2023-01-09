@@ -2,7 +2,7 @@ import tempfile
 import json
 
 import requests
-
+from .choices import RepoType
 from git import Repo
 
 from automate.models import History
@@ -32,13 +32,20 @@ class GitRemote:
         self.action = data["action"]
         self.pr_url = data["pull_request"]["url"]
         self.project = instance
+        self.flag = False
 
     def clone(self, temp_dir):
         """This function clones the primary repository into a temporary folder."""
-        # clone_from = f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"
-        clone_from = self.primary_url.replace(
-            "https://", f"https://oauth2:{self.primary_access}@"
-        )
+        # clone_from = f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"checkout
+        if self.primary_type == RepoType.GITHUB:
+            clone_from = self.primary_url.replace(
+                "https://", f"https://oauth2:{self.primary_access}@"
+            )
+        elif self.primary_type == RepoType.BITBUCKET:
+            clone_from = self.primary_url.replace(
+                f"https://{self.primary_user}", f"https://{self.primary_user}:{self.primary_access}"
+            )
+
         self.repository = Repo.clone_from(clone_from, temp_dir)
 
     def checkout(self):
@@ -47,13 +54,19 @@ class GitRemote:
 
     def push(self):
         """This function pushes the code to the secondary url"""
-        if self.secondary_type == "github":
+        if self.secondary_type == RepoType.GITHUB:
             push_to = self.secondary_url.replace(
                 "https://", f"https://oauth2:{self.secondary_access}@"
             )
-            self.repository.create_remote("secondary", push_to)
-            secondary = self.repository.remote("secondary")
-            secondary.push()
+
+        elif self.secondary_type == RepoType.BITBUCKET:
+            push_to = self.secondary_url.replace(
+                f"https://{self.secondary_user}", f"https://{self.secondary_user}:{self.secondary_access}"
+            )
+
+        self.repository.create_remote("secondary", push_to)
+        secondary = self.repository.remote("secondary")
+        secondary.push()
 
     def populate_history(self, content):
         # This function populates the history of PRs
@@ -74,21 +87,38 @@ class GitRemote:
     def make_pr(self):
         """This method handles the creating of a new PR in the secondary repository."""
         headers = {
-            "Authorization": f"Bearer {self.secondary_access}",
-        }
+                "Authorization": f"Bearer {self.secondary_access}",
+            }
 
-        data = {
-            "title": self.title,
-            "body": self.body,
-            "head": self.branch_name,
-            "base": self.base,
-        }
+        
+        if self.secondary_type ==RepoType.GITHUB:
+            data = {
+                "title": self.title,
+                "body": self.body,
+                "head": self.branch_name,
+                "base": self.base,
+            }
+            
 
-        api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
+            api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
+            
+        elif self.secondary_type == RepoType.BITBUCKET:
+            data = {
+                    "title": "Talking Nerdy",
+                    "source": {
+                            "branch": {
+                                "name": "testpr"
+                            }
+                        }
+                }
+            api_url = "https://api.bitbucket.org/2.0/repositories/t1nidog/testpr/pullrequests"
+            
         response = requests.post(api_url, headers=headers, json=data)
         status = response.status_code
         if status == 201:
             self.populate_history(response.content)
+            
+            
 
     def run(self):
         if self.action == "closed":
