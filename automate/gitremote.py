@@ -32,11 +32,12 @@ class GitRemote:
         self.action = data["action"]
         self.pr_url = data["pull_request"]["url"]
         self.project = instance
-        self.flag = False
+        self.repository = None
 
     def clone(self, temp_dir):
         """This function clones the primary repository into a temporary folder."""
-        # clone_from = f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"checkout
+        clone_from = ""
+
         if self.primary_type == RepoType.GITHUB:
             clone_from = self.primary_url.replace(
                 "https://", f"https://oauth2:{self.primary_access}@"
@@ -54,6 +55,8 @@ class GitRemote:
 
     def push(self):
         """This function pushes the code to the secondary url"""
+        push_to = ""
+
         if self.secondary_type == RepoType.GITHUB:
             push_to = self.secondary_url.replace(
                 "https://", f"https://oauth2:{self.secondary_access}@"
@@ -90,15 +93,13 @@ class GitRemote:
                 "Authorization": f"Bearer {self.secondary_access}",
             }
 
-        
-        if self.secondary_type ==RepoType.GITHUB:
+        if self.secondary_type == RepoType.GITHUB:
             data = {
                 "title": self.title,
                 "body": self.body,
                 "head": self.branch_name,
                 "base": self.base,
             }
-            
 
             api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
             
@@ -117,8 +118,6 @@ class GitRemote:
         status = response.status_code
         if status == 201:
             self.populate_history(response.content)
-            
-            
 
     def run(self):
         if self.action == "closed":
