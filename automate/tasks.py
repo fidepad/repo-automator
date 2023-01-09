@@ -4,6 +4,7 @@ from celery import shared_task
 import requests
 
 from automate.models import History
+from automate.choices import RepoType
 
 
 @shared_task()
@@ -11,14 +12,36 @@ def check_new_comments():
     # I'd get all Open PRs that have not been closed
     open_pr = History.objects.filter(action="open", merged_at=None)
 
-    # If there's an open PR then it would run a forloop checking comments on all of them
+    # If there's an open PR then it would run a for-loop checking comments on all of them
     if open_pr:
         for pr in open_pr:
-            if pr.project.secondary_repo_type == "github":
-                secondary_header = {
-                    "Authorization": f"Bearer {pr.project.secondary_token}"
-                }
-                primary_header = {"Authorization": f"Bearer {pr.project.primary_token}"}
+            # Setup headers
+            primary_header = {"Authorization": f"Bearer {pr.project.primary_token}"}
+            secondary_header = {"Authorization": f"Bearer {pr.project.secondary_token}"}
+
+            # Urls
+            primary_url = pr.primary_url
+            secondary_url = pr.url
+
+            # Check if the secondary PR is github or bitbucket for merging operations
+            if pr.project.secondary_repo_type == RepoType.GITHUB:
+                # Checks if secondary PR is merged
+                response = requests.get(secondary_url, headers=secondary_header)
+                content = response.json()
+                if content.get("merged"):
+                    # Merge the primary PR and not proceed to updating comments
+                    data = {
+                        "commit_title": f"Pull requests merged automatically.",
+                        "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo}
+                                        ({secondary_url})"""
+                    }
+                    requests.put(primary_url+"/merge", headers=primary_header)
+                    break  # steps out of the loop
+            else:
+                # Todo: Code for merging PR in bitbucket repo
+                pass
+
+            if pr.project.secondary_repo_type == RepoType.GITHUB:
                 # Get the number of comments existing in the PR online
                 response = requests.get(pr.url + "/comments", headers=secondary_header)
                 secondary_comments = json.loads(response.content)
