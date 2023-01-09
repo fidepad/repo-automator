@@ -1,11 +1,8 @@
 import json
-import logging
 
 import requests
 
 from automate.choices import RepoTypeChoices
-
-logger = logging.getLogger(__name__)
 
 
 # pylint: disable=duplicate-code

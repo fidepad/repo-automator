@@ -23,12 +23,7 @@ class UserManager(BaseUserManager):
         Raises:
             ValueError: If the `email` argument is not provided.
         """
-        if not email:
-            raise ValueError("Users must have an email address")
-        user = self.model(
-            email=email,
-            **extra_fields,
-        )
+        user = self.model(email=email, **extra_fields)
         user.set_password(password)
         user.save()
         return user
@@ -46,7 +41,7 @@ class UserManager(BaseUserManager):
             User: The created superuser instance.
         """
         extra_fields.setdefault("is_admin", True)
-        self.create_user(email, password, **extra_fields)
+        return self.create_user(email, password, **extra_fields)
 
 
 class User(PermissionsMixin, BaseModel, AbstractBaseUser):

@@ -6,6 +6,7 @@ from repo.testing.api import BaseAPITestCase
 
 class RepoLoginViewAPITest(BaseAPITestCase):
     """RepoLoginView Test case."""
+
     def test_generate_token(self):
         """Assert generating token."""
         user = UserFactory()
