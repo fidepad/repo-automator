@@ -1,10 +1,10 @@
 import json
 
 from celery import shared_task
-import requests
 
 from automate.models import History
 from automate.choices import RepoType
+from repo.utils import MakeRequest
 
 
 @shared_task()
@@ -14,6 +14,7 @@ def check_new_comments():
 
     # If there's an open PR then it would run a for-loop checking comments on all of them
     if open_pr:
+
         for pr in open_pr:
             # Setup headers
             primary_header = {"Authorization": f"Bearer {pr.project.primary_token}"}
@@ -23,10 +24,14 @@ def check_new_comments():
             primary_url = pr.primary_url
             secondary_url = pr.url
 
+            # Initialize MakeRequest
+            pri_req = MakeRequest(primary_url, primary_header)
+            sec_req = MakeRequest(secondary_url, secondary_header)
+
             # Check if the secondary PR is github or bitbucket for merging operations
             if pr.project.secondary_repo_type == RepoType.GITHUB:
                 # Checks if secondary PR is merged
-                response = requests.get(secondary_url, headers=secondary_header)
+                response = sec_req.get()
                 content = response.json()
                 if content.get("merged"):
                     # Merge the primary PR and not proceed to updating comments
@@ -35,7 +40,8 @@ def check_new_comments():
                         "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo}
                                         ({secondary_url})"""
                     }
-                    requests.put(primary_url+"/merge", headers=primary_header)
+                    response = pri_req.put(data, json=True, url=pri_req.url + "/merge")
+                    # Todo: get status code and break out
                     break  # steps out of the loop
             else:
                 # Todo: Code for merging PR in bitbucket repo
@@ -43,11 +49,10 @@ def check_new_comments():
 
             if pr.project.secondary_repo_type == RepoType.GITHUB:
                 # Get the number of comments existing in the PR online
-                response = requests.get(pr.url + "/comments", headers=secondary_header)
+                response = sec_req.get(pr.url + "/comments")
                 secondary_comments = json.loads(response.content)
 
-                primary_url = pr.primary_url + "/comments"
-                primary_response = requests.get(primary_url, headers=primary_header)
+                primary_response = pri_req.get(pri_req.url + "/comments")
                 primary_comments = json.loads(primary_response.content)
 
                 # Get's comments that are in the secondary that are not in the primary
@@ -105,8 +110,8 @@ def check_new_comments():
                             "side": comment["side"],
                         }
                         try:
-                            response = requests.post(
-                                primary_url, json=data, headers=primary_header
+                            response = pri_req.post(
+                                data=data, json=True
                             )
                             status = response.status_code
                             if status == 201:
