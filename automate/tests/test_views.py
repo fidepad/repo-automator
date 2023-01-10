@@ -2,11 +2,13 @@ from django.shortcuts import reverse
 from django.utils.text import slugify
 from faker import Faker
 from rest_framework.test import APITestCase
+from unittest.mock import patch
 
 from automate.factories import RepositoryFactory, UserFactory
 
 
 fake = Faker()
+
 
 class TestProject(APITestCase):
     """Test Project API Case."""
@@ -90,6 +92,7 @@ class TestProject(APITestCase):
 
 class TestWebhook(APITestCase):
     """Test for Webhook."""
+
     def setUp(self) -> None:
         self.user = UserFactory()
         self.project = RepositoryFactory(owner=self.user)
@@ -104,10 +107,7 @@ class TestWebhook(APITestCase):
                 "state": "closed",
                 "title": fake.text(30),
                 "body": fake.sentence(30),
-                "head": {
-                    "ref": fake.text(15),
-                    "repo": {"name": fake.text(10)}
-                }
+                "head": {"ref": fake.text(15), "repo": {"name": fake.text(10)}},
             },
         }
 
@@ -121,6 +121,21 @@ class TestWebhook(APITestCase):
         self.assertEqual(content.get("action"), ["This field is required."])
         self.assertEqual(content.get("pull_request"), ["This field is required."])
 
-    def test_to_ensure_webhook_works(self):
-        pass
+    @patch("automate.gitremote.GitRemote.run")
+    def test_to_ensure_webhook_works(self, run):
+        self.client.force_authenticate(self.user)
 
+        with patch("automate.gitremote.GitRemote.run") as mock_run:
+            """This function exists to ensure the clone function was called after the webhook runs."""
+            response = self.client.post(self.url, data=self.data, format="json")
+            self.assertTrue(mock_run.called)
+
+        content = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(content.get("action") == self.data.get("action"))
+        self.assertTrue(
+            content["pull_request"]["url"] == self.data["pull_request"]["url"]
+        )
+        self.assertEqual(
+            content["pull_request"]["head"], self.data["pull_request"]["head"]
+        )
