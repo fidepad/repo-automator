@@ -53,6 +53,7 @@ class ProjectUtilsTestCase(BaseModelTestCase):
                 project.primary_repo_webhook_url,
                 data=json.dumps(expected_payload),
                 headers=expected_headers,
+                timeout=3000,
             )
 
         with self.subTest("Assert BitBucket Webhook creation"):
@@ -92,4 +93,5 @@ class ProjectUtilsTestCase(BaseModelTestCase):
                 project.primary_repo_webhook_url,
                 data=json.dumps(expected_payload),
                 headers=expected_headers,
+                timeout=3000,
             )
