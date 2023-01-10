@@ -1,9 +1,12 @@
 from django.shortcuts import reverse
 from django.utils.text import slugify
+from faker import Faker
 from rest_framework.test import APITestCase
 
 from automate.factories import RepositoryFactory, UserFactory
 
+
+fake = Faker()
 
 class TestProject(APITestCase):
     """Test Project API Case."""
@@ -83,3 +86,41 @@ class TestProject(APITestCase):
             )
             content = response.data
             self.assertEqual("gitbucket", content.get("primary_repo_type"))
+
+
+class TestWebhook(APITestCase):
+    """Test for Webhook."""
+    def setUp(self) -> None:
+        self.user = UserFactory()
+        self.project = RepositoryFactory(owner=self.user)
+        self.url = reverse(
+            "repository:project-webhook", kwargs={"slug": self.project.slug}
+        )
+        self.data = {
+            "action": "closed",
+            "pull_request": {
+                "id": fake.random_number(9),
+                "url": fake.url(),
+                "state": "closed",
+                "title": fake.text(30),
+                "body": fake.sentence(30),
+                "head": {
+                    "ref": fake.text(15),
+                    "repo": {"name": fake.text(10)}
+                }
+            },
+        }
+
+    def test_to_ensure_webhook_gets_data(self):
+        # this test throws a validation if webhook is called without data
+        self.client.force_authenticate(self.user)
+        response = self.client.post(self.url)
+        content = response.json()
+
+        self.assertTrue(response.status_code == 400)
+        self.assertEqual(content.get("action"), ["This field is required."])
+        self.assertEqual(content.get("pull_request"), ["This field is required."])
+
+    def test_to_ensure_webhook_works(self):
+        pass
+

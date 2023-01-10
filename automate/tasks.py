@@ -29,7 +29,7 @@ def check_new_comments():
             sec_req = MakeRequest(secondary_url, secondary_header)
 
             # Check if the secondary PR is github or bitbucket for merging operations
-            if pr.project.secondary_repo_type == RepoType.GITHUB:
+            if pr.project.secondary_repo_type == RepoType.GITHUB.value:
                 # Checks if secondary PR is merged
                 response = sec_req.get()
                 content = response.json()
@@ -47,7 +47,7 @@ def check_new_comments():
                 # Todo: Code for merging PR in bitbucket repo
                 pass
 
-            if pr.project.secondary_repo_type == RepoType.GITHUB:
+            if pr.project.secondary_repo_type == RepoType.GITHUB.value:
                 # Get the number of comments existing in the PR online
                 response = sec_req.get(pr.url + "/comments")
                 secondary_comments = json.loads(response.content)
