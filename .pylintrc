@@ -1,11 +1,22 @@
 [MASTER]
-ignore-paths=
-    migrations, env
-
 ignore=
-    manage.py
+    manage.py,
+    migrations,
+    env,
+    venv,
+    apps.py,
 
 disable=
     too-many-instance-attributes,
     len-as-condition,
-    too-few-public-methods
+    too-few-public-methods,
+    missing-module-docstring,
+    invalid-name,
+    too-many-ancestors,
+    no-member,
+    anomalous-backslash-in-string,
+    abstract-method,
+    fixme
+
+[FORMAT]
+max-line-length=180

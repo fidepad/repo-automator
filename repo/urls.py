@@ -1,4 +1,4 @@
-"""repo URL Configuration
+"""repo URL Configuration.
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/4.1/topics/http/urls/
@@ -14,23 +14,20 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
-
-# fmt: off
-from drf_spectacular.views import (SpectacularAPIView, SpectacularRedocView,
-                                   SpectacularSwaggerView)
-from knox import views as knox_views
+from django.urls import include, path
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularRedocView,
+    SpectacularSwaggerView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-
+    path("projects/", include("automate.urls")),
     # Documentation Endpoints
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(), name="swagger"),
     path("redoc/", SpectacularRedocView.as_view(), name="redoc"),
-
-    # Knox Endpoints
-    path("auth/get-token", knox_views.LoginView.as_view(), name="login"),
-    path(r"auth/logout/", knox_views.LogoutView.as_view(), name="logout"),
-    path(r"auth/logoutall/", knox_views.LogoutAllView.as_view(), name="logoutall"),
+    # Repo Automator Core URL
+    path("", include("repo.api.urls")),
 ]

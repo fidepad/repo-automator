@@ -17,17 +17,31 @@ run:
 	python manage.py runserver
 
 build:
-	docker-compose build
+	docker compose --project-name repo_automator build
 
 start:
-	docker-compose up
+	docker compose --project-name repo_automator up
+
+start_d:
+	docker compose --project-name repo_automator up -d
+
+down:
+	docker compose --project-name repo_automator down -v
 
 lints:
-	isort .
-	pylint --recursive=y .
+	flake8 . --config=setup.cfg
 	black .
-	flake8
-	docformatter .
+	pylint --recursive=y .
+	isort --profile black .
+	docformatter . --recursive --check
+
+checks:
+	python manage.py test
+	flake8 . --config=setup.cfg
+	isort --check-only --profile black .
+	pylint . --recursive=y --rcfile=.pylintrc
+	docformatter . --recursive --check
+	black --check --diff .
 
 test:
 	python manage.py test

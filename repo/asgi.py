@@ -1,5 +1,4 @@
-"""
-ASGI config for repo project.
+"""ASGI config for repo project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
