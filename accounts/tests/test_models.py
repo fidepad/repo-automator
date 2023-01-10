@@ -6,7 +6,10 @@ User = get_user_model()
 
 
 class UserTestCase(BaseModelTestCase):
+    """Test case for User Model."""
+
     def test_user_model_manager(self):
+        """Test user model custom manager."""
         with self.subTest("Create User"):
             user_email = "a@a.com"
             user = User.objects.create_user(

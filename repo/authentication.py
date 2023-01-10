@@ -4,6 +4,7 @@ from knox.auth import TokenAuthentication
 
 class KnoxAuthenticationScheme(OpenApiAuthenticationExtension):
     """An OpenAPI extension that adds a Knox authentication swagger docs."""
+
     target_class = TokenAuthentication
     name = "KnoxAuthenticationScheme"  # name used in the schema
     priority = 1
