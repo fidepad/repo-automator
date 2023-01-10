@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 from unittest.mock import patch
 
 from automate.factories import RepositoryFactory, UserFactory
+from automate.choices import RepoType
 
 
 fake = Faker()
@@ -84,10 +85,10 @@ class TestProject(APITestCase):
 
         with self.subTest("Update project"):
             response = self.client.patch(
-                self.url_detail, data={"primary_repo_type": "gitbucket"}
+                self.url_detail, data={"primary_repo_type": RepoType.BITBUCKET.value}
             )
             content = response.data
-            self.assertEqual("gitbucket", content.get("primary_repo_type"))
+            self.assertEqual(RepoType.BITBUCKET.value, content.get("primary_repo_type"))
 
 
 class TestWebhook(APITestCase):

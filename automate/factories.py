@@ -1,7 +1,8 @@
 import factory
 from django.contrib.auth import get_user_model
-from automate.models import Project
 from faker import Faker
+
+from automate.models import Project
 
 User = get_user_model()
 fake = Faker()

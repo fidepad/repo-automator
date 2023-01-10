@@ -1,7 +1,8 @@
 from rest_framework import serializers
-from .models import Project
-from .utils import add_hook_to_repo, gen_hook_url
+
 from automate.gitremote import GitRemote
+from automate.models import Project
+from automate.utils import add_hook_to_repo, gen_hook_url
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -30,7 +31,7 @@ class ProjectSerializer(serializers.ModelSerializer):
             repo_name = repo_name[-1]
             repo_name = repo_name.split(".")[0]
         except ValueError as err:
-            raise Exception(err)
+            raise serializers.ValidationError({"error": str(err)})
         host = gen_hook_url(
             username=validated_data["owner"].username, repo_name=repo_name
         )
@@ -86,6 +87,6 @@ class WebHookSerializer(serializers.Serializer):
         git.run()
 
     def to_representation(self, instance):
-        data = super(WebHookSerializer, self).to_representation(instance)
+        data = super().to_representation(instance)
         self.clone_push_make_pr(self.context.get("queryset"), data)
         return data

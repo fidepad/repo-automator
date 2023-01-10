@@ -9,7 +9,7 @@ from repo.utils import MakeRequest
 
 @shared_task()
 def check_new_comments():
-    # I'd get all Open PRs that have not been closed
+    """I'd get all Open PRs that have not been closed."""
     open_pr = History.objects.filter(action="open", merged_at=None)
 
     # If there's an open PR then it would run a for-loop checking comments on all of them
@@ -36,9 +36,9 @@ def check_new_comments():
                 if content.get("merged"):
                     # Merge the primary PR and not proceed to updating comments
                     data = {
-                        "commit_title": f"Pull requests merged automatically.",
+                        "commit_title": "Pull requests merged automatically.",
                         "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo}
-                                        ({secondary_url})"""
+                                        ({secondary_url})""",
                     }
                     response = pri_req.put(data, json=True, url=pri_req.url + "/merge")
                     # Todo: get status code and break out
@@ -84,10 +84,10 @@ def check_new_comments():
                             "side": pri_comment["side"],
                         }
 
-                        """Compares the sub_comment with the primary comment. If they are the same, 
-                        it increments the counter. If at the end of the loop there is no counter, it means
-                        the comment doesn't exist and it should be added 
-                        """
+                        #  Compares the sub_comment with the primary comment. If they are the same,
+                        #  it increments the counter. If at the end of the loop there is no counter,
+                        #  it means the comment doesn't exist and it should be added
+
                         if sub_comment == sub_primary_comment:
                             counter += 1
                             break
@@ -110,9 +110,7 @@ def check_new_comments():
                             "side": comment["side"],
                         }
                         try:
-                            response = pri_req.post(
-                                data=data, json=True
-                            )
+                            response = pri_req.post(data=data, json=True)
                             status = response.status_code
                             if status == 201:
                                 # Increment comments
