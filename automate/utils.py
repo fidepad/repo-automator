@@ -59,5 +59,5 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
         webhook_url,
         data=json.dumps(payload),
         headers=headers,
-        timeout=5,
+        timeout=3000,
     )
