@@ -1,7 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets, status, response
+from rest_framework import filters, viewsets, status
 from rest_framework.decorators import action
+from rest_framework.response import Response
+
 from .filtersets import RepositoryFilter
 from .models import Project
 from .serializers import ProjectSerializer, WebHookSerializer
@@ -51,4 +53,4 @@ class ProjectViewSets(viewsets.ModelViewSet):
             data=request.data, context={"queryset": queryset}
         )
         serializer.is_valid(raise_exception=True)
-        return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)

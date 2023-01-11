@@ -1,8 +1,12 @@
-from django.contrib.auth.models import User
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import slugify
+
+from automate.choices import RepoTypeChoices
 from repo.models import BaseModel
-from automate.choices import RepoType
+
+User = get_user_model()
 
 
 class Project(BaseModel):
@@ -11,46 +15,57 @@ class Project(BaseModel):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(
         max_length=200,
-        help_text="Name of task or project i.e copy from parent to child",
+        help_text="Name of the project",
         unique=True,
     )
-    primary_username = models.CharField(
-        max_length=200, help_text="The git username for the primary repository"
+    slug = models.SlugField(max_length=250, unique=True, blank=True)
+    primary_repo_owner = models.CharField(
+        max_length=100, help_text="Primary repo owner"
     )
-    primary_repo = models.CharField(
-        max_length=100, help_text="Name of original repository"
-    )
-    primary_repo_url = models.CharField(
-        max_length=500, help_text="The url repository to be copied from"
+    primary_repo_name = models.CharField(max_length=100, help_text="Primary repo name")
+    primary_repo_token = models.CharField(
+        max_length=100, help_text="Access Token for primary repo"
     )
     primary_repo_type = models.CharField(
-        max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
+        max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
     )
-    primary_token = models.TextField(
-        help_text="Primary Access token to make PR changes"
-    )
-    secondary_repo = models.CharField(
+    primary_repo_project_name = models.CharField(
         max_length=100,
-        help_text="Name of repository that new changes would be pushed to",
+        help_text="Primary Repo project name; If repo is bitbucket",
+        null=True,
+        blank=True,
     )
-    secondary_username = models.CharField(
-        max_length=200, help_text="The git username for the secondary repository"
-    )
-    secondary_repo_url = models.CharField(
-        max_length=500,
-        help_text="The url repository that new changes would be pushed to",
-    )
-    secondary_repo_type = models.CharField(
-        max_length=50, choices=RepoType.choices, default=RepoType.GITHUB
-    )
-    secondary_token = models.TextField(
-        help_text="Secondary Access token to make PR changes"
-    )
-    slug = models.SlugField(max_length=250, unique=True, blank=True)
     base = models.CharField(
         max_length=200,
         help_text="The branch you want to target with PR changes. i.e., main",
     )
+    secondary_repo_owner = models.CharField(
+        max_length=100, help_text="Secondary repo owner"
+    )
+    secondary_repo_name = models.CharField(
+        max_length=100, help_text="Secondary repo name"
+    )
+    secondary_repo_token = models.CharField(
+        max_length=100, help_text="Access Token for secondary repo"
+    )
+    secondary_repo_type = models.CharField(
+        max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
+    )
+    secondary_repo_project_name = models.CharField(
+        max_length=100,
+        help_text="Secondary Repo project name; If repo is bitbucket",
+        null=True,
+        blank=True,
+    )
+
+    @property
+    def primary_repo_webhook_url(self):
+        """Construct the primary repo webhook endpoint."""
+        if self.primary_repo_type == RepoTypeChoices.GITHUB:
+            url = settings.GITHUB_BASE_URL + "/repos/{owner}/{repo}/hooks"
+        else:
+            url = settings.BITBUCKET_BASE_URL + "/repositories/{owner}/{repo}/hooks"
+        return url.format(owner=self.primary_repo_owner, repo=self.primary_repo_name)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

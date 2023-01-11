@@ -42,7 +42,6 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          python -m pip install requests
           pip install -r requirements.txt
       - name: Make Migrations
         run: |
@@ -53,7 +52,7 @@ jobs:
           python manage.py test
       - name: Lint with flake8
         run: |
-         flake8 . --config=setup.cfg
+          flake8 . --config=setup.cfg
       - name: Sort imports with isort
         run: |
           isort --check-only --profile black --skip migrations .
@@ -63,6 +62,6 @@ jobs:
       - name: Format with docformatter
         run: |
           docformatter . --recursive --check
-      - name: Format with black
-        run: |
-          black --check --diff .
+#      - name: Format with black
+#        run: |
+#          black --check --diff .

@@ -5,7 +5,7 @@ import requests
 from git import Repo
 
 from automate.models import History
-from automate.choices import RepoType
+from automate.choices import RepoTypeChoices
 
 
 class GitRemote:
@@ -38,11 +38,11 @@ class GitRemote:
         """This function clones the primary repository into a temporary folder."""
         clone_from = ""
 
-        if self.primary_type == RepoType.GITHUB:
+        if self.primary_type == RepoTypeChoices.GITHUB:
             clone_from = self.primary_url.replace(
                 "https://", f"https://oauth2:{self.primary_access}@"
             )
-        elif self.primary_type == RepoType.BITBUCKET:
+        elif self.primary_type == RepoTypeChoices.BITBUCKET:
             clone_from = self.primary_url.replace(
                 f"https://{self.primary_user}",
                 f"https://{self.primary_user}:{self.primary_access}",
@@ -58,12 +58,12 @@ class GitRemote:
         """This function pushes the code to the secondary url"""
         push_to = ""
 
-        if self.secondary_type == RepoType.GITHUB:
+        if self.secondary_type == RepoTypeChoices.GITHUB:
             push_to = self.secondary_url.replace(
                 "https://", f"https://oauth2:{self.secondary_access}@"
             )
 
-        elif self.secondary_type == RepoType.BITBUCKET:
+        elif self.secondary_type == RepoTypeChoices.BITBUCKET:
             push_to = self.secondary_url.replace(
                 f"https://{self.secondary_user}",
                 f"https://{self.secondary_user}:{self.secondary_access}",
@@ -95,7 +95,7 @@ class GitRemote:
             "Authorization": f"Bearer {self.secondary_access}",
         }
 
-        if self.secondary_type == RepoType.GITHUB:
+        if self.secondary_type == RepoTypeChoices.GITHUB:
             data = {
                 "title": self.title,
                 "body": self.body,
@@ -105,7 +105,7 @@ class GitRemote:
 
             api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
 
-        elif self.secondary_type == RepoType.BITBUCKET:
+        elif self.secondary_type == RepoTypeChoices.BITBUCKET:
             data = {"title": "Talking Nerdy", "source": {"branch": {"name": "testpr"}}}
             api_url = (
                 "https://api.bitbucket.org/2.0/repositories/t1nidog/testpr/pullrequests"

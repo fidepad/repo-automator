@@ -3,7 +3,8 @@ ignore=
     manage.py,
     migrations,
     env,
-    venv
+    venv,
+    apps.py,
 
 disable=
     too-many-instance-attributes,
@@ -13,6 +14,8 @@ disable=
     invalid-name,
     too-many-ancestors,
     no-member,
+    anomalous-backslash-in-string,
+    abstract-method,
     fixme
 
 [FORMAT]

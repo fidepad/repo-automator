@@ -3,9 +3,15 @@ import json
 from celery import shared_task
 
 from automate.models import History
-from automate.choices import RepoType
+from automate.choices import RepoTypeChoices
+from automate.utils import add_hook_to_repo
 from repo.utils import MakeRequest
 
+
+@shared_task()
+def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
+    """This tasks simply adds hook to repo."""
+    add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token)
 
 @shared_task()
 def check_new_comments():
@@ -29,7 +35,7 @@ def check_new_comments():
             sec_req = MakeRequest(secondary_url, secondary_header)
 
             # Check if the secondary PR is github or bitbucket for merging operations
-            if pr.project.secondary_repo_type == RepoType.GITHUB.value:
+            if pr.project.secondary_repo_type == RepoTypeChoices.GITHUB.value:
                 # Checks if secondary PR is merged
                 response = sec_req.get()
                 content = response.json()
@@ -47,7 +53,7 @@ def check_new_comments():
                 # Todo: Code for merging PR in bitbucket repo
                 pass
 
-            if pr.project.secondary_repo_type == RepoType.GITHUB.value:
+            if pr.project.secondary_repo_type == RepoTypeChoices.GITHUB.value:
                 # Get the number of comments existing in the PR online
                 response = sec_req.get(pr.url + "/comments")
                 secondary_comments = json.loads(response.content)
