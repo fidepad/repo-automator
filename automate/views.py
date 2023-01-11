@@ -6,7 +6,6 @@ from .filtersets import RepositoryFilter
 from .models import Project
 from .serializers import ProjectSerializer, WebHookSerializer
 
-
 class ProjectViewSets(viewsets.ModelViewSet):
     """Project Repository ViewSets.
 
