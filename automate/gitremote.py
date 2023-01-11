@@ -13,17 +13,17 @@ class GitRemote:
 
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
-        self.primary_access = instance.primary_token  # Todo: (Mark) Decrypt key here
+        self.primary_access = instance.primary_repo_token  # Todo: (Mark) Decrypt key here
         self.primary_url = instance.primary_repo_url
         self.primary_type = instance.primary_repo_type
-        self.primary_user = instance.primary_username
+        self.primary_user = instance.primary_repo_owner
         self.branch_name = data["pull_request"]["head"]["ref"]
         self.secondary_access = (
-            instance.secondary_token
+            instance.secondary_repo_token
         )  # Todo: (Mark) Decrypt key here
         self.secondary_url = instance.secondary_repo_url
-        self.secondary_user = instance.secondary_username
-        self.secondary_repo = instance.secondary_repo.replace(" ", "-").lower()
+        self.secondary_user = instance.secondary_repo_owner
+        self.secondary_repo = instance.secondary_repo_name.replace(" ", "-").lower()
         self.secondary_type = instance.secondary_repo_type
         self.repo = data["pull_request"]["head"]["repo"]["name"]
         self.base = instance.base

@@ -36,7 +36,7 @@ class ProjectFactory(factory.django.DjangoModelFactory):
     primary_repo_type = factory.Faker("random_element", elements=RepoTypeChoices)
     primary_repo_project_name = factory.Faker("word")
     secondary_repo_owner = factory.Faker("word")
-    secondary_repo_name = factory.Faker("name")
+    secondary_repo_name = factory.Faker("word")
     secondary_repo_token = factory.Faker("sha256")
     secondary_repo_type = factory.Faker("random_element", elements=RepoTypeChoices)
     secondary_repo_project_name = factory.Faker("word")

@@ -3,9 +3,8 @@ from rest_framework.reverse import reverse
 
 from accounts.serializers import UserSerializer
 
-from automate.gitremote import GitRemote
 from automate.models import Project
-from automate.tasks import add_hook_to_repo
+from automate.tasks import add_hook_to_repo, init_run_git
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -77,8 +76,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        git = GitRemote(instance=project, data=data)
-        git.run()
+        init_run_git.delay(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
