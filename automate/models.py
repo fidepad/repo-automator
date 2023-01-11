@@ -23,9 +23,7 @@ class Project(BaseModel):
         max_length=100, help_text="Primary repo owner"
     )
     primary_repo_name = models.CharField(max_length=100, help_text="Primary repo name")
-    primary_repo_token = models.CharField(
-        max_length=100, help_text="Access Token for primary repo"
-    )
+    primary_repo_token = models.TextField(help_text="Access Token for primary repo")
     primary_repo_type = models.CharField(
         max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
     )
@@ -34,6 +32,9 @@ class Project(BaseModel):
         help_text="Primary Repo project name; If repo is bitbucket",
         null=True,
         blank=True,
+    )
+    primary_repo_url = models.CharField(
+        max_length=500, help_text="The url repository to be copied from"
     )
     base = models.CharField(
         max_length=200,
@@ -45,9 +46,7 @@ class Project(BaseModel):
     secondary_repo_name = models.CharField(
         max_length=100, help_text="Secondary repo name"
     )
-    secondary_repo_token = models.CharField(
-        max_length=100, help_text="Access Token for secondary repo"
-    )
+    secondary_repo_token = models.TextField(help_text="Access Token for secondary repo")
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
     )
@@ -56,6 +55,9 @@ class Project(BaseModel):
         help_text="Secondary Repo project name; If repo is bitbucket",
         null=True,
         blank=True,
+    )
+    secondary_repo_url = models.CharField(
+        max_length=500, help_text="The url repository to be copied to"
     )
 
     @property

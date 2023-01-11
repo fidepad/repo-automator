@@ -16,6 +16,8 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
         repo_token (str): The token for authenticating the request to the repository's webhooks API.
     """
     if repo_type == RepoTypeChoices.GITHUB:
+        # Modify webhook_url for github to find it. Change "Repo Name" to "repo-name" to suite git_url
+        webhook_url = webhook_url.strip().replace(" ", "-").lower()
         payload = {
             "name": "web",
             "active": True,
@@ -39,7 +41,7 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
             "events": [
                 "pullrequest:created",
                 "pullrequest:fulfilled",
-                "repo:push",
+                "repo:push", # NOTE: @Timizuo I noticed push was used here.
                 "pullrequest:rejected",
                 "pullrequest:updated",
             ],
@@ -51,9 +53,11 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
     # TODO: Would be nice to add this to an Activity Log, This way you know what fails
     #  and what passes. So that you can retry again.
     #  Also, Log status code
+
+
     requests.post(
         webhook_url,
         data=json.dumps(payload),
         headers=headers,
-        timeout=3000,
+        timeout=5,
     )

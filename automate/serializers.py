@@ -41,6 +41,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         owner = self.context.get("owner")
         attrs["owner"] = owner
         # TODO: Validate the owner/token/repo name are all correct and can connect to Repository
+        # TODO: I don't understand the todo above
         return attrs
 
 
