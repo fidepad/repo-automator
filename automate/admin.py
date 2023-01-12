@@ -6,7 +6,12 @@ from automate.models import Project, History
 class ProjectAdmin(admin.ModelAdmin):
     """Project Admin Model."""
 
-    list_display = ["owner", "primary_repo", "secondary_repo"]
+    list_display = [
+        "owner",
+        "name",
+        "primary_repo_name",
+        "secondary_repo_name",
+    ]
 
 
 admin.site.register(Project, ProjectAdmin)

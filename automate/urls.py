@@ -1,9 +1,10 @@
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import DefaultRouter
+
 from automate.views import ProjectViewSets
 
-app_name = "repository"
+app_name = "project"
 
-router = SimpleRouter()
+router = DefaultRouter()
 router.register("", ProjectViewSets)
 
 urlpatterns = router.urls

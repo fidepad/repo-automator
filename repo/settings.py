@@ -26,7 +26,8 @@ SECRET_KEY = config("SECRET_KEY", default=get_random_secret_key(), cast=str)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=True)
-ALLOWED_HOSTS = ["localhost", config("EXTRA_HOST", cast=str, default="sitename.com")]
+
+ALLOWED_HOSTS = config("ALLOWED_HOST", cast=list, default=["*"])
 
 
 # Application definition
@@ -39,6 +40,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "automate",
+    "repo",
+    "accounts",
     # Install Apps
     "rest_framework",
     "drf_spectacular",
@@ -54,6 +57,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "repo.middleware.CommonMiddleware",
 ]
 
 ROOT_URLCONF = "repo.urls"
@@ -91,7 +95,7 @@ DATABASES = {
     }
 }
 
-
+FERNET_KEYS = [SECRET_KEY]
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
 
@@ -137,7 +141,6 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "knox.auth.TokenAuthentication",
-        # todo: Using Session Token for now till Knox Login is Overwritten
         "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
@@ -161,5 +164,12 @@ REST_KNOX = {
     "AUTO_REFRESH": False,
 }
 
-CELERY_BROKER_URL = "redis://redis:6379"
-CELERY_RESULT_BACKEND = "redis://redis:6379"
+# CELERY_BROKER_URL = "redis://redis:6379"
+# CELERY_RESULT_BACKEND = "redis://redis:6379"
+
+GITHUB_BASE_URL = "https://api.github.com"
+BITBUCKET_BASE_URL = "https://api.bitbucket.org/2.0"
+
+
+# Custom User
+AUTH_USER_MODEL = "accounts.User"

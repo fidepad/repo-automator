@@ -1,29 +1,15 @@
 version: '3'
 services:
-  repo_api:
-    container_name: repo_api
+  db:
+    container_name: db
     image: postgres
-    environment:
-      POSTGRES_USER: "user"
-      POSTGRES_PASSWORD: "123"
-      PGDATA: /data/repo_api
+    env_file:
+      - .env
     ports:
       - "5432:5432"
     volumes:
-      - repo_api:/data/repo_api
+      - repo_db:/data/repo_db
     restart: always
-
-  
-  pgadmin:
-    container_name: repo_pgadmin
-    image: dpage/pgadmin4
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: a@a.com
-      PGADMIN_DEFAULT_PASSWORD: a
-    ports:
-      - "6050:80"
-
 
 volumes:
-  repo_api:
+  repo_db:

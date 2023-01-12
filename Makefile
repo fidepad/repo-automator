@@ -17,10 +17,16 @@ run:
 	python manage.py runserver
 
 build:
-	docker-compose build
+	docker compose --project-name repo_automator build
 
 start:
-	docker-compose up
+	docker compose --project-name repo_automator up
+
+start_d:
+	docker compose --project-name repo_automator up -d
+
+down:
+	docker compose --project-name repo_automator down -v
 
 lints:
 	flake8 . --config=setup.cfg

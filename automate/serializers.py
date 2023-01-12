@@ -1,52 +1,44 @@
 from rest_framework import serializers
-from .models import Project
-from .utils import add_hook_to_repo, gen_hook_url
-from automate.gitremote import GitRemote
+from rest_framework.reverse import reverse
+
+from accounts.serializers import UserSerializer
+
+from .models import Project, History
+from .utils import add_hook_to_repo
 
 
 class ProjectSerializer(serializers.ModelSerializer):
-    """Project Serializer."""
+    """Repository Serializer."""
 
-    user = serializers.SerializerMethodField()
+    owner = UserSerializer(read_only=True)
 
     class Meta:
-        """Meta class for Repository Serializer."""
+        """Metaclass for Repository Serializer."""
 
         model = Project
-        exclude = ["created_at", "updated_at"]
+        fields = "__all__"
         lookup_field = "slug"
         extra_kwargs = {"owner": {"read_only": True}}
 
     def create(self, validated_data):
-        repo = super().create(**validated_data)
+        project = super().create(validated_data)
 
-        if not repo:
-            raise serializers.ValidationError(
-                {"error": "this repo bundle was not initialized"}
-            )
-        try:
-            repo_name = validated_data["primary_repo"]
-            repo_name = str(repo_name).split("/")
-            repo_name = repo_name[-1]
-            repo_name = repo_name.split(".")[0]
-        except ValueError as err:
-            raise Exception(err)
-        host = gen_hook_url(
-            username=validated_data["owner"].username, repo_name=repo_name
+        domain = self.context["request"].domain
+        path = reverse("project:project-webhook", args=(project.slug,))
+        project_webhook_url = domain + path
+        # TODO: Move this logic to celery
+        add_hook_to_repo(
+            project_webhook_url=project_webhook_url,
+            webhook_url=project.primary_repo_webhook_url,
+            repo_type=project.primary_repo_type,
+            repo_token=project.primary_repo_token,
         )
-        if add_hook_to_repo(
-            repo=repo_name, host=host, owner=validated_data["owner"], auth_token="token"
-        ):
-            return repo
-
-    def get_user(self, obj):
-        """Gets the user information and returns the name and email address."""
-        user = {"username": obj.owner.username, "email": obj.owner.email}
-        return user
+        return project
 
     def validate(self, attrs):
         owner = self.context.get("owner")
         attrs["owner"] = owner
+        # TODO: Validate the owner/token/repo name are all correct and can connect to Repository
         return attrs
 
 
@@ -55,7 +47,11 @@ class RepoSerializer(serializers.Serializer):
 
     name = serializers.CharField()
 
-
+class HistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = History
+        fields = '__all__'
+        
 class HeadSerializer(serializers.Serializer):
     """Head Serializer for the project that contains information about the branch and the repository."""
 
