@@ -1,4 +1,5 @@
 import requests
+from requests.exceptions import RequestException
 import logging
 
 # Set up logging
@@ -23,7 +24,7 @@ class MakeRequest:
             url = self.url
         try:
             response = requests.get(url, headers=self.headers)
-        except [ConnectionError, requests.Timeout] as err:
+        except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
         finally:
@@ -39,7 +40,7 @@ class MakeRequest:
                 response = requests.post(url, json=data, headers=self.headers)
             else:
                 response = requests.post(url, data=data, headers=self.headers)
-        except [ConnectionError, requests.Timeout] as err:
+        except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
         finally:
@@ -55,7 +56,7 @@ class MakeRequest:
                 response = requests.put(url, json=data, headers=self.headers)
             else:
                 response = requests.put(url, data=data, headers=self.headers)
-        except [ConnectionError, requests.Timeout] as err:
+        except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
         finally:
