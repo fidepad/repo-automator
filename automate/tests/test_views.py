@@ -26,11 +26,14 @@ class ProjectAPITestCase(BaseAPITestCase):
             "primary_repo_owner": "test-owner",
             "primary_repo_name": "test-name",
             "primary_repo_token": "11223344",
+            "primary_repo_url": fake.url(),
             "primary_repo_type": RepoTypeChoices.GITHUB.value,
+            "base": "main",
             "secondary_repo_owner": "sec-owner",
             "secondary_repo_name": "sec-name",
             "secondary_repo_token": "2353w423",
             "secondary_repo_type": RepoTypeChoices.BITBUCKET.value,
+            "secondary_repo_url": fake.url()
         }
         self.url_list = reverse("project:project-list")
         self.url_detail = reverse(
@@ -100,14 +103,14 @@ class ProjectAPITestCase(BaseAPITestCase):
             self.assertEqual(RepoTypeChoices.BITBUCKET.value, content.get("primary_repo_type"))
 
 
-class TestWebhook(APITestCase):
+class TestWebhook(BaseAPITestCase):
     """Test for Webhook."""
 
     def setUp(self) -> None:
         self.user = UserFactory()
         self.project = ProjectFactory(owner=self.user)
         self.url = reverse(
-            "repository:project-webhook", kwargs={"slug": self.project.slug}
+            "project:project-webhook", kwargs={"slug": self.project.slug}
         )
         self.data = {
             "action": "closed",
@@ -123,7 +126,6 @@ class TestWebhook(APITestCase):
 
     def test_to_ensure_webhook_gets_data(self):
         # this test throws a validation if webhook is called without data
-        self.client.force_authenticate(self.user)
         response = self.client.post(self.url)
         content = response.json()
 
@@ -133,7 +135,6 @@ class TestWebhook(APITestCase):
 
     @patch("automate.gitremote.GitRemote.run")
     def test_to_ensure_webhook_works(self, run):
-        self.client.force_authenticate(self.user)
 
         with patch("automate.gitremote.GitRemote.run") as mock_run:
             """This function exists to ensure the clone function was called after the webhook runs."""

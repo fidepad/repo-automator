@@ -5,20 +5,22 @@ from celery import shared_task
 from automate.gitremote import GitRemote
 from automate.models import History
 from automate.choices import RepoTypeChoices
-from automate.utils import add_hook_to_repo as normal_add_hook_to_repo
+from automate.utils import add_hook_to_repo
 from repo.utils import MakeRequest
 
 
 @shared_task()
-def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
+def add_hook_to_repo_task(project_webhook_url, webhook_url, repo_type, repo_token):
     """This tasks simply adds hook to repo."""
-    normal_add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token)
+    add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token)
+
 
 @shared_task()
 def init_run_git(project, data):
     """This is a delayed method to initialize and run git processes"""
     git = GitRemote(instance=project, data=data)
     git.run()
+
 
 @shared_task()
 def check_new_comments():

@@ -1,10 +1,13 @@
+from django.conf import settings
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from accounts.serializers import UserSerializer
 
+from automate.choices import RepoTypeChoices
 from automate.models import Project
-from automate.tasks import add_hook_to_repo, init_run_git
+from automate.tasks import add_hook_to_repo_task, init_run_git
+from repo.utils import MakeRequest
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -28,7 +31,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         project_webhook_url = domain + path
         
         # TODO: Applied celery delay
-        add_hook_to_repo.delay(
+        add_hook_to_repo_task.delay(
             project_webhook_url=project_webhook_url,
             webhook_url=project.primary_repo_webhook_url,
             repo_type=project.primary_repo_type,
@@ -36,11 +39,59 @@ class ProjectSerializer(serializers.ModelSerializer):
         )
         return project
 
+    def test_if_repo_exists(self, git_type, token, repo, owner):
+        """This ensures the repository url is accessible."""
+
+        # setup Url
+        if git_type == RepoTypeChoices.BITBUCKET.value:
+            url = f"{settings.BITBUCKET_BASE_URL}/repositories/{owner}/{repo}"
+            header = {"Authorization": f"Bearer {token}"}
+        else:
+            url = f"{settings.GITHUB_BASE_URL}/repos/{owner}/{repo}"
+            header = {"Authorization": f"Token {token}"}
+
+        # Test Repository
+        url = url.replace(" ", "-").strip().lower()
+        req = MakeRequest(url, headers=header)
+        response = req.get()
+        if type(response) != dict:
+            if response.status_code == 200:
+                return "ok"
+            # It returns the error message if it's not 200
+            return response.json()
+        return response
+
     def validate(self, attrs):
         owner = self.context.get("owner")
         attrs["owner"] = owner
-        # TODO: Validate the owner/token/repo name are all correct and can connect to Repository
-        # TODO: I don't understand the todo above
+        primary_user = attrs["primary_repo_owner"]
+        primary_token = attrs["primary_repo_token"]
+        primary_repo = attrs["primary_repo_name"]
+        primary_type = attrs.get("primary_repo_type")
+
+        secondary_user = attrs["secondary_repo_owner"]
+        secondary_token = attrs["secondary_repo_token"]
+        secondary_repo = attrs["secondary_repo_name"]
+        secondary_type = attrs.get("secondary_repo_type")
+
+        # Validate the owner/token/repo name are all correct and can connect to Repository
+
+        test_primary_repo = self.test_if_repo_exists(primary_type, primary_token, primary_repo, primary_user)
+        if test_primary_repo != "ok":
+            error = {
+                "error": "Primary repository not accessible",
+                "message": test_primary_repo
+            }
+            raise serializers.ValidationError(error)
+
+        test_secondary_repo = self.test_if_repo_exists(secondary_type, secondary_token, secondary_repo, secondary_user)
+        if test_secondary_repo != "ok":
+            error = {
+                "error": "Secondary repository not accessible",
+                "info": test_primary_repo
+            }
+            raise serializers.ValidationError(error)
+
         return attrs
 
 
@@ -76,7 +127,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git.delay(project, data)
+        init_run_git(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
