@@ -53,10 +53,12 @@ class ProjectViewSets(viewsets.ModelViewSet):
         return Response({})
     
     @action(detail=False, methods=["GET"], url_path="(?P<slug>[\w-]+)/")
-    def histories(self, request, slug, history):
+    def histories(self, request, slug):
         """Endpoint to get histories"""
         history = History.objects.get(projects__slug=slug)
         histories = HistorySerializer(history, many=True)
         return Response(histories.data)
+    
+    
     
     
