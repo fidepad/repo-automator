@@ -106,6 +106,10 @@ for name, lookup in models.Field.class_lookups.items():
         EncryptedField.register_lookup(lookup_class)
 
 
+class EncryptedTextField(EncryptedField, models.TextField):
+    pass
+
+
 class EncryptedCharField(EncryptedField, models.CharField):
     pass
 

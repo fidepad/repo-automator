@@ -2,10 +2,10 @@ import tempfile
 import json
 
 import requests
-from .choices import RepoType
 from git import Repo
 
 from automate.models import History
+from automate.choices import RepoTypeChoices
 
 
 class GitRemote:
@@ -13,17 +13,17 @@ class GitRemote:
 
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
-        self.primary_access = instance.primary_token  # Todo: (Mark) Decrypt key here
+        self.primary_access = instance.primary_repo_token  # Todo: (Mark) Decrypt key here
         self.primary_url = instance.primary_repo_url
         self.primary_type = instance.primary_repo_type
-        self.primary_user = instance.primary_username
+        self.primary_user = instance.primary_repo_owner
         self.branch_name = data["pull_request"]["head"]["ref"]
         self.secondary_access = (
-            instance.secondary_token
+            instance.secondary_repo_token
         )  # Todo: (Mark) Decrypt key here
         self.secondary_url = instance.secondary_repo_url
-        self.secondary_user = instance.secondary_username
-        self.secondary_repo = instance.secondary_repo.replace(" ", "-").lower()
+        self.secondary_user = instance.secondary_repo_owner
+        self.secondary_repo = instance.secondary_repo_name.replace(" ", "-").lower()
         self.secondary_type = instance.secondary_repo_type
         self.repo = data["pull_request"]["head"]["repo"]["name"]
         self.base = instance.base
@@ -32,18 +32,20 @@ class GitRemote:
         self.action = data["action"]
         self.pr_url = data["pull_request"]["url"]
         self.project = instance
-        self.flag = False
+        self.repository = None
 
     def clone(self, temp_dir):
         """This function clones the primary repository into a temporary folder."""
-        # clone_from = f"https://{self.primary_access}@github.com/{self.primary_user}/{self.repo}"checkout
-        if self.primary_type == RepoType.GITHUB:
+        clone_from = ""
+
+        if self.primary_type == RepoTypeChoices.GITHUB:
             clone_from = self.primary_url.replace(
                 "https://", f"https://oauth2:{self.primary_access}@"
             )
-        elif self.primary_type == RepoType.BITBUCKET:
+        elif self.primary_type == RepoTypeChoices.BITBUCKET:
             clone_from = self.primary_url.replace(
-                f"https://{self.primary_user}", f"https://{self.primary_user}:{self.primary_access}"
+                f"https://{self.primary_user}",
+                f"https://{self.primary_user}:{self.primary_access}",
             )
 
         self.repository = Repo.clone_from(clone_from, temp_dir)
@@ -54,14 +56,17 @@ class GitRemote:
 
     def push(self):
         """This function pushes the code to the secondary url"""
-        if self.secondary_type == RepoType.GITHUB:
+        push_to = ""
+
+        if self.secondary_type == RepoTypeChoices.GITHUB:
             push_to = self.secondary_url.replace(
                 "https://", f"https://oauth2:{self.secondary_access}@"
             )
 
-        elif self.secondary_type == RepoType.BITBUCKET:
+        elif self.secondary_type == RepoTypeChoices.BITBUCKET:
             push_to = self.secondary_url.replace(
-                f"https://{self.secondary_user}", f"https://{self.secondary_user}:{self.secondary_access}"
+                f"https://{self.secondary_user}",
+                f"https://{self.secondary_user}:{self.secondary_access}",
             )
 
         self.repository.create_remote("secondary", push_to)
@@ -69,7 +74,7 @@ class GitRemote:
         secondary.push()
 
     def populate_history(self, content):
-        # This function populates the history of PRs
+        """This function populates the history of PRs."""
         if content:
             content = json.loads(content)
             History.objects.create(
@@ -87,40 +92,32 @@ class GitRemote:
     def make_pr(self):
         """This method handles the creating of a new PR in the secondary repository."""
         headers = {
-                "Authorization": f"Bearer {self.secondary_access}",
-            }
+            "Authorization": f"Bearer {self.secondary_access}",
+        }
 
-        
-        if self.secondary_type ==RepoType.GITHUB:
+        if self.secondary_type == RepoTypeChoices.GITHUB:
             data = {
                 "title": self.title,
                 "body": self.body,
                 "head": self.branch_name,
                 "base": self.base,
             }
-            
 
             api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
-            
-        elif self.secondary_type == RepoType.BITBUCKET:
-            data = {
-                    "title": "Talking Nerdy",
-                    "source": {
-                            "branch": {
-                                "name": "testpr"
-                            }
-                        }
-                }
-            api_url = "https://api.bitbucket.org/2.0/repositories/t1nidog/testpr/pullrequests"
-            
-        response = requests.post(api_url, headers=headers, json=data)
+
+        elif self.secondary_type == RepoTypeChoices.BITBUCKET:
+            data = {"title": "Talking Nerdy", "source": {"branch": {"name": "testpr"}}}
+            api_url = (
+                "https://api.bitbucket.org/2.0/repositories/t1nidog/testpr/pullrequests"
+            )
+
+        response = requests.post(api_url, headers=headers, json=data, timeout=30)
         status = response.status_code
         if status == 201:
             self.populate_history(response.content)
-            
-            
 
     def run(self):
+        """This function runs all functions required to clone, push and merge PRs."""
         if self.action == "closed":
             with tempfile.TemporaryDirectory() as parent_dir:
                 self.clone(parent_dir)

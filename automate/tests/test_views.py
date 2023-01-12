@@ -1,12 +1,17 @@
 from unittest.mock import patch
 
 from django.shortcuts import reverse
+from django.utils.text import slugify
+from faker import Faker
+from rest_framework.test import APITestCase
 
-from accounts.factories import UserFactory
+from automate.factories import ProjectFactory, UserFactory
 from automate.choices import RepoTypeChoices
-from automate.factories import ProjectFactory
 from automate.models import Project
 from repo.testing.api import BaseAPITestCase
+
+
+fake = Faker()
 
 
 class ProjectAPITestCase(BaseAPITestCase):
@@ -21,11 +26,14 @@ class ProjectAPITestCase(BaseAPITestCase):
             "primary_repo_owner": "test-owner",
             "primary_repo_name": "test-name",
             "primary_repo_token": "11223344",
+            "primary_repo_url": fake.url(),
             "primary_repo_type": RepoTypeChoices.GITHUB.value,
+            "base": "main",
             "secondary_repo_owner": "sec-owner",
             "secondary_repo_name": "sec-name",
             "secondary_repo_token": "2353w423",
             "secondary_repo_type": RepoTypeChoices.BITBUCKET.value,
+            "secondary_repo_url": fake.url()
         }
         self.url_list = reverse("project:project-list")
         self.url_detail = reverse(
@@ -89,10 +97,56 @@ class ProjectAPITestCase(BaseAPITestCase):
 
         with self.subTest("Update project"):
             response = self.client.patch(
-                self.url_detail,
-                data={"primary_repo_type": RepoTypeChoices.BITBUCKET.value},
+                self.url_detail, data={"primary_repo_type": RepoTypeChoices.BITBUCKET.value}
             )
             content = response.data
-            self.assertEqual(
-                RepoTypeChoices.BITBUCKET.value, content.get("primary_repo_type")
-            )
+            self.assertEqual(RepoTypeChoices.BITBUCKET.value, content.get("primary_repo_type"))
+
+
+class TestWebhook(BaseAPITestCase):
+    """Test for Webhook."""
+
+    def setUp(self) -> None:
+        self.user = UserFactory()
+        self.project = ProjectFactory(owner=self.user)
+        self.url = reverse(
+            "project:project-webhook", kwargs={"slug": self.project.slug}
+        )
+        self.data = {
+            "action": "closed",
+            "pull_request": {
+                "id": fake.random_number(9),
+                "url": fake.url(),
+                "state": "closed",
+                "title": fake.text(30),
+                "body": fake.sentence(30),
+                "head": {"ref": fake.text(15), "repo": {"name": fake.text(10)}},
+            },
+        }
+
+    def test_to_ensure_webhook_gets_data(self):
+        # this test throws a validation if webhook is called without data
+        response = self.client.post(self.url)
+        content = response.json()
+
+        self.assertTrue(response.status_code == 400)
+        self.assertEqual(content.get("action"), ["This field is required."])
+        self.assertEqual(content.get("pull_request"), ["This field is required."])
+
+    @patch("automate.gitremote.GitRemote.run")
+    def test_to_ensure_webhook_works(self, run):
+
+        with patch("automate.gitremote.GitRemote.run") as mock_run:
+            """This function exists to ensure the clone function was called after the webhook runs."""
+            response = self.client.post(self.url, data=self.data, format="json")
+            self.assertTrue(mock_run.called)
+
+        content = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertTrue(content.get("action") == self.data.get("action"))
+        self.assertTrue(
+            content["pull_request"]["url"] == self.data["pull_request"]["url"]
+        )
+        self.assertEqual(
+            content["pull_request"]["head"], self.data["pull_request"]["head"]
+        )

@@ -3,8 +3,12 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import slugify
 from automate.choices import RepoTypeChoices
+
+from automate.choices import RepoTypeChoices
 from repo.models import BaseModel
-from .encryptor.crypt import EncryptedCharField
+
+User = get_user_model()
+from .encryptor.crypt import EncryptedTextField
 
 
 User = get_user_model()
@@ -24,9 +28,7 @@ class Project(BaseModel):
         max_length=100, help_text="Primary repo owner"
     )
     primary_repo_name = models.CharField(max_length=100, help_text="Primary repo name")
-    primary_repo_token = EncryptedCharField(
-        max_length=100, help_text="Access Token for primary repo"
-    )
+    primary_repo_token = EncryptedTextField(help_text="Access Token for primary repo")
     primary_repo_type = models.CharField(
         max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
     )
@@ -36,15 +38,20 @@ class Project(BaseModel):
         null=True,
         blank=True,
     )
+    primary_repo_url = models.CharField(
+        max_length=500, help_text="The url repository to be copied from"
+    )
+    base = models.CharField(
+        max_length=200,
+        help_text="The branch you want to target with PR changes. i.e., main",
+    )
     secondary_repo_owner = models.CharField(
         max_length=100, help_text="Secondary repo owner"
     )
     secondary_repo_name = models.CharField(
         max_length=100, help_text="Secondary repo name"
     )
-    secondary_repo_token = EncryptedCharField(
-        max_length=100, help_text="Access Token for secondary repo"
-    )
+    secondary_repo_token = EncryptedTextField(help_text="Access Token for secondary repo")
     secondary_repo_type = models.CharField(
         max_length=50, choices=RepoTypeChoices.choices, default=RepoTypeChoices.GITHUB
     )
@@ -53,6 +60,9 @@ class Project(BaseModel):
         help_text="Secondary Repo project name; If repo is bitbucket",
         null=True,
         blank=True,
+    )
+    secondary_repo_url = models.CharField(
+        max_length=500, help_text="The url repository to be copied to"
     )
 
 
@@ -65,6 +75,15 @@ class Project(BaseModel):
             url = settings.BITBUCKET_BASE_URL + "/repositories/{owner}/{repo}/hooks"
         return url.format(owner=self.primary_repo_owner, repo=self.primary_repo_name)
 
+
+    @property
+    def primary_repo_webhook_url(self):
+        """Construct the primary repo webhook endpoint."""
+        if self.primary_repo_type == RepoTypeChoices.GITHUB:
+            url = settings.GITHUB_BASE_URL + "/repos/{owner}/{repo}/hooks"
+        else:
+            url = settings.BITBUCKET_BASE_URL + "/repositories/{owner}/{repo}/hooks"
+        return url.format(owner=self.primary_repo_owner, repo=self.primary_repo_name)
 
     def save(self, *args, **kwargs):
         self.slug = slugify(self.name)

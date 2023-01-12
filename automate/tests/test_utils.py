@@ -1,4 +1,5 @@
 import json
+from unittest import TestCase
 from unittest.mock import patch
 
 from rest_framework.reverse import reverse
@@ -7,6 +8,7 @@ from automate.choices import RepoTypeChoices
 from automate.factories import ProjectFactory
 from automate.utils import add_hook_to_repo
 from repo.testing.model import BaseModelTestCase
+from repo.utils import MakeRequest
 
 
 class ProjectUtilsTestCase(BaseModelTestCase):
@@ -95,3 +97,37 @@ class ProjectUtilsTestCase(BaseModelTestCase):
                 headers=expected_headers,
                 timeout=3000,
             )
+
+
+class TestMakeRequest(TestCase):
+    """This tests the make request class"""
+
+    def setUp(self):
+        self.url = "https://httpbin.org/"  # This is an endpoint for testing requests
+        self.headers = {"Content-Type": "application/json"}
+        self.data = {"key": "value"}
+        self.make_request = MakeRequest(self.url, self.headers)
+
+    def test_get(self):
+        response = self.make_request.get(self.url + "get")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["url"], self.url + "get")
+
+    def test_post(self):
+        response = self.make_request.post(self.data, json=True, url=self.url + "post")
+        content = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["json"], self.data)
+
+    def test_put(self):
+        response = self.make_request.put(self.data, json=True, url=self.url + "put")
+        content = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(content["json"], self.data)
+
+    def test_that_exception_works(self):
+        self.url = "https://examplebadnotworking.com/"
+        self.make_request = MakeRequest(self.url)
+        response = self.make_request.get()
+
+        self.assertIn("HTTPSConnectionPool", response["data"]["error"])
