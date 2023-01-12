@@ -23,12 +23,47 @@ class ProjectSerializer(serializers.ModelSerializer):
         lookup_field = "slug"
         extra_kwargs = {"owner": {"read_only": True}}
 
+    def validate_repo(self, attrs):
+        """This method was created to be used on create because the repo validation runs even when
+            user wants to update project and it fails on testing as the parameters weren't provided.
+        """
+        primary_user = attrs["primary_repo_owner"]
+        primary_token = attrs["primary_repo_token"]
+        primary_repo = attrs["primary_repo_name"]
+        primary_type = attrs.get("primary_repo_type")
+
+        secondary_user = attrs["secondary_repo_owner"]
+        secondary_token = attrs["secondary_repo_token"]
+        secondary_repo = attrs["secondary_repo_name"]
+        secondary_type = attrs.get("secondary_repo_type")
+
+        # Validate the owner/token/repo name are all correct and can connect to Repository
+
+        test_primary_repo = self.test_if_repo_exists(primary_type, primary_token, primary_repo, primary_user)
+        if test_primary_repo != "ok":
+            error = {
+                "error": "Primary repository not accessible",
+                "message": test_primary_repo
+            }
+            raise serializers.ValidationError(error)
+
+        test_secondary_repo = self.test_if_repo_exists(secondary_type, secondary_token, secondary_repo, secondary_user)
+        if test_secondary_repo != "ok":
+            error = {
+                "error": "Secondary repository not accessible",
+                "info": test_primary_repo
+            }
+            raise serializers.ValidationError(error)
+
     def create(self, validated_data):
         project = super().create(validated_data)
 
         domain = self.context["request"].domain
         path = reverse("project:project-webhook", args=(project.slug,))
         project_webhook_url = domain + path
+
+        # Validate repositories here
+        self.validate_repo(validated_data)
         
         # TODO: Applied celery delay
         add_hook_to_repo_task.delay(
@@ -64,34 +99,6 @@ class ProjectSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         owner = self.context.get("owner")
         attrs["owner"] = owner
-        primary_user = attrs["primary_repo_owner"]
-        primary_token = attrs["primary_repo_token"]
-        primary_repo = attrs["primary_repo_name"]
-        primary_type = attrs.get("primary_repo_type")
-
-        secondary_user = attrs["secondary_repo_owner"]
-        secondary_token = attrs["secondary_repo_token"]
-        secondary_repo = attrs["secondary_repo_name"]
-        secondary_type = attrs.get("secondary_repo_type")
-
-        # Validate the owner/token/repo name are all correct and can connect to Repository
-
-        test_primary_repo = self.test_if_repo_exists(primary_type, primary_token, primary_repo, primary_user)
-        if test_primary_repo != "ok":
-            error = {
-                "error": "Primary repository not accessible",
-                "message": test_primary_repo
-            }
-            raise serializers.ValidationError(error)
-
-        test_secondary_repo = self.test_if_repo_exists(secondary_type, secondary_token, secondary_repo, secondary_user)
-        if test_secondary_repo != "ok":
-            error = {
-                "error": "Secondary repository not accessible",
-                "info": test_primary_repo
-            }
-            raise serializers.ValidationError(error)
-
         return attrs
 
 
@@ -127,7 +134,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git(project, data)
+        init_run_git.delay(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

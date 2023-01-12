@@ -70,8 +70,9 @@ class ProjectAPITestCase(BaseAPITestCase):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(len(content) == 0)
 
-    @patch("automate.serializers.add_hook_to_repo")
-    def test_create_project(self, add_hook_to_repo_mock):
+    @patch("automate.tasks.add_hook_to_repo_task.delay")
+    @patch("automate.serializers.ProjectSerializer.validate_repo")
+    def test_create_project(self, validate_repo_mock, add_hook_to_repo_mock):
         """Test creating of a project."""
         response = self.client.post(self.url_list, data=self.data)
         self.assertEqual(response.status_code, 201)
@@ -87,6 +88,8 @@ class ProjectAPITestCase(BaseAPITestCase):
             repo_type=project.primary_repo_type,
             repo_token=project.primary_repo_token,
         )
+
+        self.assertTrue(validate_repo_mock.called)
 
     def test_to_retrieve_and_update_project(self):
         """Test to Get and Updates project."""
@@ -133,14 +136,10 @@ class TestWebhook(BaseAPITestCase):
         self.assertEqual(content.get("action"), ["This field is required."])
         self.assertEqual(content.get("pull_request"), ["This field is required."])
 
-    @patch("automate.gitremote.GitRemote.run")
+    @patch("automate.tasks.init_run_git.delay")
     def test_to_ensure_webhook_works(self, run):
 
-        with patch("automate.gitremote.GitRemote.run") as mock_run:
-            """This function exists to ensure the clone function was called after the webhook runs."""
-            response = self.client.post(self.url, data=self.data, format="json")
-            self.assertTrue(mock_run.called)
-
+        response = self.client.post(self.url, data=self.data, format="json")
         content = response.json()
         self.assertEqual(response.status_code, 201)
         self.assertTrue(content.get("action") == self.data.get("action"))
@@ -150,3 +149,4 @@ class TestWebhook(BaseAPITestCase):
         self.assertEqual(
             content["pull_request"]["head"], self.data["pull_request"]["head"]
         )
+        self.assertTrue(run.called)
