@@ -3,7 +3,6 @@ from rest_framework import serializers
 from rest_framework.reverse import reverse
 
 from accounts.serializers import UserSerializer
-
 from automate.choices import RepoTypeChoices
 from automate.models import Project
 from automate.tasks import add_hook_to_repo_task, init_run_git
@@ -25,7 +24,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
     def validate_repo(self, attrs):
         """This method was created to be used on create because the repo validation runs even when
-            user wants to update project and it fails on testing as the parameters weren't provided.
+        user wants to update project and it fails on testing as the parameters weren't provided.
         """
         primary_user = attrs["primary_repo_owner"]
         primary_token = attrs["primary_repo_token"]
@@ -39,19 +38,23 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         # Validate the owner/token/repo name are all correct and can connect to Repository
 
-        test_primary_repo = self.test_if_repo_exists(primary_type, primary_token, primary_repo, primary_user)
+        test_primary_repo = self.test_if_repo_exists(
+            primary_type, primary_token, primary_repo, primary_user
+        )
         if test_primary_repo != "ok":
             error = {
                 "error": "Primary repository not accessible",
-                "message": test_primary_repo
+                "message": test_primary_repo,
             }
             raise serializers.ValidationError(error)
 
-        test_secondary_repo = self.test_if_repo_exists(secondary_type, secondary_token, secondary_repo, secondary_user)
+        test_secondary_repo = self.test_if_repo_exists(
+            secondary_type, secondary_token, secondary_repo, secondary_user
+        )
         if test_secondary_repo != "ok":
             error = {
                 "error": "Secondary repository not accessible",
-                "info": test_primary_repo
+                "info": test_primary_repo,
             }
             raise serializers.ValidationError(error)
 
@@ -64,7 +67,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         # Validate repositories here
         self.validate_repo(validated_data)
-        
+
         # TODO: Applied celery delay
         add_hook_to_repo_task.delay(
             project_webhook_url=project_webhook_url,
@@ -89,7 +92,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         url = url.replace(" ", "-").strip().lower()
         req = MakeRequest(url, headers=header)
         response = req.get()
-        if type(response) != dict:
+        if isinstance(response, dict):
             if response.status_code == 200:
                 return "ok"
             # It returns the error message if it's not 200

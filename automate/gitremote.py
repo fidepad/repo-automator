@@ -1,11 +1,11 @@
-import tempfile
 import json
+import tempfile
 
 import requests
 from git import Repo
 
-from automate.models import History
 from automate.choices import RepoTypeChoices
+from automate.models import History
 
 
 class GitRemote:
@@ -13,7 +13,9 @@ class GitRemote:
 
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
-        self.primary_access = instance.primary_repo_token  # Todo: (Mark) Decrypt key here
+        self.primary_access = (
+            instance.primary_repo_token
+        )  # Todo: (Mark) Decrypt key here
         self.primary_url = instance.primary_repo_url
         self.primary_type = instance.primary_repo_type
         self.primary_user = instance.primary_repo_owner
@@ -51,11 +53,11 @@ class GitRemote:
         self.repository = Repo.clone_from(clone_from, temp_dir)
 
     def checkout(self):
-        """This function checkouts to the new branch"""
+        """This function checkouts to the new branch."""
         self.repository.git.checkout(self.branch_name)
 
     def push(self):
-        """This function pushes the code to the secondary url"""
+        """This function pushes the code to the secondary url."""
         push_to = ""
 
         if self.secondary_type == RepoTypeChoices.GITHUB:

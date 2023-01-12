@@ -1,15 +1,12 @@
 from unittest.mock import patch
 
 from django.shortcuts import reverse
-from django.utils.text import slugify
 from faker import Faker
-from rest_framework.test import APITestCase
 
-from automate.factories import ProjectFactory, UserFactory
 from automate.choices import RepoTypeChoices
+from automate.factories import ProjectFactory, UserFactory
 from automate.models import Project
 from repo.testing.api import BaseAPITestCase
-
 
 fake = Faker()
 
@@ -33,7 +30,7 @@ class ProjectAPITestCase(BaseAPITestCase):
             "secondary_repo_name": "sec-name",
             "secondary_repo_token": "2353w423",
             "secondary_repo_type": RepoTypeChoices.BITBUCKET.value,
-            "secondary_repo_url": fake.url()
+            "secondary_repo_url": fake.url(),
         }
         self.url_list = reverse("project:project-list")
         self.url_detail = reverse(
@@ -100,10 +97,13 @@ class ProjectAPITestCase(BaseAPITestCase):
 
         with self.subTest("Update project"):
             response = self.client.patch(
-                self.url_detail, data={"primary_repo_type": RepoTypeChoices.BITBUCKET.value}
+                self.url_detail,
+                data={"primary_repo_type": RepoTypeChoices.BITBUCKET.value},
             )
             content = response.data
-            self.assertEqual(RepoTypeChoices.BITBUCKET.value, content.get("primary_repo_type"))
+            self.assertEqual(
+                RepoTypeChoices.BITBUCKET.value, content.get("primary_repo_type")
+            )
 
 
 class TestWebhook(BaseAPITestCase):
@@ -128,7 +128,7 @@ class TestWebhook(BaseAPITestCase):
         }
 
     def test_to_ensure_webhook_gets_data(self):
-        # this test throws a validation if webhook is called without data
+        """this test throws a validation if webhook is called without data."""
         response = self.client.post(self.url)
         content = response.json()
 
@@ -138,7 +138,7 @@ class TestWebhook(BaseAPITestCase):
 
     @patch("automate.tasks.init_run_git.delay")
     def test_to_ensure_webhook_works(self, run):
-
+        """This is a mocked test to ensure our webhook works."""
         response = self.client.post(self.url, data=self.data, format="json")
         content = response.json()
         self.assertEqual(response.status_code, 201)

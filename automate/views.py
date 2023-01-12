@@ -1,6 +1,6 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets, status
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -47,8 +47,14 @@ class ProjectViewSets(viewsets.ModelViewSet):
         context["owner"] = self.request.user
         return context
 
-    @action(detail=False, methods=["POST"], url_path="(?P<slug>[\w-]+)/webhook", permission_classes=[AllowAny])
+    @action(
+        detail=False,
+        methods=["POST"],
+        url_path="(?P<slug>[\w-]+)/webhook",
+        permission_classes=[AllowAny],
+    )
     def webhook(self, request, slug):
+        """This is the webhook action called by the PR on PR changes."""
         queryset = get_object_or_404(Project, slug=slug)
         serializer = WebHookSerializer(
             data=request.data, context={"queryset": queryset}

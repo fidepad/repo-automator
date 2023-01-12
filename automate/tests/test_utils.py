@@ -100,7 +100,7 @@ class ProjectUtilsTestCase(BaseModelTestCase):
 
 
 class TestMakeRequest(TestCase):
-    """This tests the make request class"""
+    """This tests the make request class."""
 
     def setUp(self):
         self.url = "https://httpbin.org/"  # This is an endpoint for testing requests
@@ -109,23 +109,27 @@ class TestMakeRequest(TestCase):
         self.make_request = MakeRequest(self.url, self.headers)
 
     def test_get(self):
+        """Test for the get request."""
         response = self.make_request.get(self.url + "get")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["url"], self.url + "get")
 
     def test_post(self):
+        """Test for the post request."""
         response = self.make_request.post(self.data, json=True, url=self.url + "post")
         content = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["json"], self.data)
 
     def test_put(self):
+        """Test for the put request."""
         response = self.make_request.put(self.data, json=True, url=self.url + "put")
         content = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content["json"], self.data)
 
     def test_that_exception_works(self):
+        """Test to ensure exceptions are handled."""
         self.url = "https://examplebadnotworking.com/"
         self.make_request = MakeRequest(self.url)
         response = self.make_request.get()

@@ -1,7 +1,7 @@
 """Celery file to set up celery in projects repo."""
 
-from datetime import timedelta
 import os
+from datetime import timedelta
 
 from celery import Celery
 

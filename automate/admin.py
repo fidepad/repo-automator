@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from automate.models import Project, History
+from automate.models import History, Project
 
 
 class ProjectAdmin(admin.ModelAdmin):

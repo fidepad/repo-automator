@@ -16,6 +16,10 @@ disable=
     no-member,
     anomalous-backslash-in-string,
     abstract-method,
+    too-many-locals,
+    too-many-nested-blocks,
+    too-many-branches,
+    lost-exception,
     fixme
 
 [FORMAT]

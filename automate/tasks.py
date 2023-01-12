@@ -2,11 +2,11 @@ import json
 
 from celery import shared_task
 
+from automate.choices import RepoTypeChoices
 from automate.gitremote import GitRemote
 from automate.models import History
-from automate.choices import RepoTypeChoices
 from automate.utils import add_hook_to_repo
-from repo.utils import MakeRequest
+from repo.utils import MakeRequest, logger
 
 
 @shared_task()
@@ -131,7 +131,6 @@ def check_new_comments():
                                 # Increment comments
                                 pr.comments = len(comments_not_in_primary)
                                 pr.save()
-                        except Exception as err:
-                            print(err)  # Todo: Perform logging function here
-
-                print(pr.action)
+                        except AttributeError as err:
+                            logger.error(err)
+                            logger.critical(response)

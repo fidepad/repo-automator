@@ -1,6 +1,7 @@
+import logging
+
 import requests
 from requests.exceptions import RequestException
-import logging
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -23,7 +24,7 @@ class MakeRequest:
         if not url:
             url = self.url
         try:
-            response = requests.get(url, headers=self.headers)
+            response = requests.get(url, headers=self.headers, timeout=300)
         except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
@@ -37,9 +38,13 @@ class MakeRequest:
             url = self.url
         try:
             if json:
-                response = requests.post(url, json=data, headers=self.headers)
+                response = requests.post(
+                    url, json=data, headers=self.headers, timeout=300
+                )
             else:
-                response = requests.post(url, data=data, headers=self.headers)
+                response = requests.post(
+                    url, data=data, headers=self.headers, timeout=300
+                )
         except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
@@ -53,9 +58,13 @@ class MakeRequest:
             url = self.url
         try:
             if json:
-                response = requests.put(url, json=data, headers=self.headers)
+                response = requests.put(
+                    url, json=data, headers=self.headers, timeout=300
+                )
             else:
-                response = requests.put(url, data=data, headers=self.headers)
+                response = requests.put(
+                    url, data=data, headers=self.headers, timeout=300
+                )
         except (RequestException, requests.Timeout) as err:
             logger.exception(err)
             response["data"] = {"error": str(err)}
