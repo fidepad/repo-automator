@@ -21,13 +21,20 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
         payload = {
             "name": "web",
             "active": True,
-            "events": ["push", "pull_request"],
+            "events": ["pull_request"],
             "config": {
                 "url": project_webhook_url,
                 "content_type": "json",
                 "insecure_ssl": "1",
             },
         }
+
+        # Modify payload url if it's localhost to not fail validation
+        if "http://localhost" in payload["config"]["url"]:
+            # Get the remaining endpoint after localhost
+            url = project_webhook_url[21:]
+            payload["config"]["url"] = "https://localtestsite.com" + url
+
         headers = {
             "Accept": "application/vnd.github+json",
             "Authorization": f"Bearer {repo_token}",
@@ -49,13 +56,14 @@ def add_hook_to_repo(project_webhook_url, webhook_url, repo_type, repo_token):
         headers = {
             "Authorization": f"Bearer {repo_token}",
         }
-    # TODO: Would be nice to add this to an Activity Log, This way you know what fails
-    #  and what passes. So that you can retry again.
-    #  Also, Log status code
 
-    requests.post(
+    response = requests.post(
         webhook_url,
         data=json.dumps(payload),
         headers=headers,
         timeout=3000,
     )
+    # TODO: Would be nice to add this to an Activity Log, This way you know what fails
+    #  and what passes. So that you can retry again.
+    #  Also, Log status code
+    return response

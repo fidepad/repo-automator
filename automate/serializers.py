@@ -92,7 +92,7 @@ class ProjectSerializer(serializers.ModelSerializer):
         url = url.replace(" ", "-").strip().lower()
         req = MakeRequest(url, headers=header)
         response = req.get()
-        if isinstance(response, dict):
+        if not isinstance(response, dict):
             if response.status_code == 200:
                 return "ok"
             # It returns the error message if it's not 200
