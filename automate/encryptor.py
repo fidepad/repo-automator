@@ -1,13 +1,37 @@
 from cryptography.fernet import Fernet
 from django.conf import settings
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from cryptography.hazmat.backends import default_backend
+from django.utils.encoding import force_bytes
+import base64
+
+
+backend = default_backend()
+info = b'django-fernet-fields'
+# We need reproducible key derivation, so we can't use a random salt
+salt = b'django-fernet-fields-hkdf-salt'
 
 
 class Crypt:
     """Encryptor class for encrypting and decrypting."""
 
-    def __init__(self, key):
+    def __init__(self):
         self.key = settings.SECRET_KEY
-        self.fernet = Fernet(key)
+        self.fernet = Fernet(self.derive_fernet_key(self.key))
+
+    def derive_fernet_key(self, key):
+        """
+        Salt key for fernet
+        """
+        hkdf = HKDF(
+            algorithm=hashes.SHA256(),
+            length=32,
+            salt=salt,
+            info=info,
+            backend=backend,
+        )
+        return base64.urlsafe_b64encode(hkdf.derive(force_bytes(key)))
 
     def encrypt(self, message):
         """This function encrypts the message."""

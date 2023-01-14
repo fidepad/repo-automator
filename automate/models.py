@@ -83,7 +83,7 @@ class History(BaseModel):
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     pr_id = models.IntegerField()
     action = models.CharField(max_length=30, null=True)
-    body = models.TextField()
+    body = models.TextField(null=True, blank=True)
     url = models.URLField(help_text="url link for the new PR")
     primary_url = models.URLField(help_text="url link for the initial PR")
     author = models.CharField(max_length=200)
@@ -93,3 +93,18 @@ class History(BaseModel):
 
     def __str__(self):
         return f"{self.project}: {self.action}"
+
+class ProjectActivities(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
+    action = models.TextField()
+    status = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ('-created_at',)
+        verbose_name = 'Activity'
+        verbose_name_plural = 'Activities'
+    
+    def __str__(self) -> str:
+        return self.action

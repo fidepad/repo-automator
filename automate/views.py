@@ -11,13 +11,14 @@ from .serializers import ProjectSerializer, WebHookSerializer
 
 
 class ProjectViewSets(viewsets.ModelViewSet):
+    
     """Project Repository ViewSets.
 
     Note: primary_repo_type and secondary_repo_type text choice fields of either github
     or gitbucket (for now). The default is github. Please ensure to provide (gitbucket or others)
     if you are pushing to a different version control.
     """
-
+        
     serializer_class = ProjectSerializer
     queryset = Project.objects.all()
     lookup_field = "slug"
@@ -61,3 +62,14 @@ class ProjectViewSets(viewsets.ModelViewSet):
         )
         serializer.is_valid(raise_exception=True)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    
+    @action(detail=False, methods=["POST"], url_path="(?P<slug>[\w-]+)/webhook", permission_classes=[AllowAny])
+    def webhook(self, request, slug):
+        queryset = get_object_or_404(Project, slug=slug)
+        serializer = WebHookSerializer(
+            data=request.data, context={"queryset": queryset}
+        )
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    

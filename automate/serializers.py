@@ -1,22 +1,20 @@
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-
+from django.forms.models import model_to_dict
 from accounts.serializers import UserSerializer
 from automate.choices import RepoTypeChoices
 from automate.models import Project
 from automate.tasks import add_hook_to_repo_task, init_run_git
 from repo.utils import MakeRequest
-
+# from encr
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Project Serializer."""
-
+        
     owner = UserSerializer(read_only=True)
-
     class Meta:
         """Metaclass for Project Serializer."""
-
         model = Project
         fields = "__all__"
         lookup_field = "slug"
@@ -59,23 +57,23 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(error)
 
     def create(self, validated_data):
-        project = super().create(validated_data)
-
-        domain = self.context["request"].domain
-        path = reverse("project:project-webhook", args=(project.slug,))
+        project_ = super().create(validated_data)
+        context = self.context["request"]
+        domain = context.domain
+        user_ = UserSerializer(context.user).data
+        path = reverse("project:project-webhook", args=(project_.slug,))
         project_webhook_url = domain + path
 
         # Validate repositories here
         self.validate_repo(validated_data)
-
+        project = ProjectSerializer(project_)
         # TODO: Applied celery delay
-        add_hook_to_repo_task.delay(
-            project_webhook_url=project_webhook_url,
-            webhook_url=project.primary_repo_webhook_url,
-            repo_type=project.primary_repo_type,
-            repo_token=project.primary_repo_token,
+        add_hook_to_repo_task(
+            project_webhook_url,
+            user_['email'],
+            project.data,
         )
-        return project
+        return project_
 
     def test_if_repo_exists(self, git_type, token, repo, owner):
         """This ensures the repository url is accessible."""
@@ -125,7 +123,7 @@ class PullRequestSerializer(serializers.Serializer):
     url = serializers.URLField()
     state = serializers.CharField()
     title = serializers.CharField()
-    body = serializers.CharField()
+    body = serializers.CharField(allow_blank=True, required=False, allow_null=True)
     head = HeadSerializer()
 
 
@@ -137,7 +135,10 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git.delay(project, data)
+        
+        project = model_to_dict(project)
+        # print(project)
+        init_run_git(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -27,7 +27,7 @@ SECRET_KEY = config("SECRET_KEY", default=get_random_secret_key(), cast=str)
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", cast=bool, default=True)
 
-ALLOWED_HOSTS = config("ALLOWED_HOST", cast=list, default=["*"])
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -91,7 +91,7 @@ DATABASES = {
         "USER": config("POSTGRES_USER"),
         "PASSWORD": config("POSTGRES_PASSWORD"),
         "HOST": config("POSTGRES_HOST"),
-        "PORT": 5432,
+        "PORT": config("POSTGRES_PORT"),
     }
 }
 
@@ -141,7 +141,7 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "knox.auth.TokenAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
     "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),

@@ -5,7 +5,13 @@ import requests
 from git import Repo
 
 from automate.choices import RepoTypeChoices
-from automate.models import History
+from automate.models import History, Project
+# from automate.views import ProjectSerializer
+from .utils import log_activity
+
+
+class Tod:
+    pass
 
 
 class GitRemote:
@@ -13,16 +19,18 @@ class GitRemote:
 
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
-        self.primary_access = (
-            instance.primary_repo_token
-        )  # Todo: (Mark) Decrypt key here
+
+        self.tod = Tod()
+        self.tod.__dict__ = instance
+        instance = self.tod
+        self.primary_access = instance.primary_repo_token
+        # Todo: (Mark) Decrypt key here
         self.primary_url = instance.primary_repo_url
         self.primary_type = instance.primary_repo_type
         self.primary_user = instance.primary_repo_owner
         self.branch_name = data["pull_request"]["head"]["ref"]
-        self.secondary_access = (
-            instance.secondary_repo_token
-        )  # Todo: (Mark) Decrypt key here
+        self.secondary_access = instance.secondary_repo_token
+        # Todo: (Mark) Decrypt key here
         self.secondary_url = instance.secondary_repo_url
         self.secondary_user = instance.secondary_repo_owner
         self.secondary_repo = instance.secondary_repo_name.replace(" ", "-").lower()
@@ -71,28 +79,29 @@ class GitRemote:
                 f"https://{self.secondary_user}:{self.secondary_access}",
             )
 
-        self.repository.create_remote("secondary", push_to)
-        secondary = self.repository.remote("secondary")
+        self.repository.create_remote(self.secondary_repo, push_to)
+        secondary = self.repository.remote(self.secondary_repo)
         secondary.push()
 
-    def populate_history(self, content):
+    def populate_history(self, content, project):
         """This function populates the history of PRs."""
-        if content:
-            content = json.loads(content)
-            History.objects.create(
-                project=self.project,
-                pr_id=content.get("id"),
-                action=content.get("state"),
-                body=content.get("body"),
-                primary_url=self.pr_url,
-                url=content.get("url"),
-                author=content["user"]["login"],
-                merged_at=content.get("merged_at"),
-                closed_at=content.get("closed_at"),
-            )
+
+        History.objects.create(
+            project=project,
+            pr_id=content.get("id"),
+            action=content.get("state"),
+            body=content.get("body") if content.get("body") else content.get("description"),
+            primary_url=self.pr_url,
+            url=content.get("url") if content.get("url") else "no url" ,
+            author=content.get("user")["login"] if content.get("user") else "no author",
+            merged_at=content.get("merged_at") if content.get("merged_at") else None,
+            closed_at=content.get("closed_at") if content.get("closed_at") else None,
+        )
 
     def make_pr(self):
         """This method handles the creating of a new PR in the secondary repository."""
+        user = Project.objects.get(name=self.project.name)
+        user = user.owner
         headers = {
             "Authorization": f"Bearer {self.secondary_access}",
         }
@@ -103,26 +112,50 @@ class GitRemote:
                 "body": self.body,
                 "head": self.branch_name,
                 "base": self.base,
+                "maintainer_can_modify": True,
+                "allow_unrelated_histories": True
             }
 
             api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
 
         elif self.secondary_type == RepoTypeChoices.BITBUCKET:
-            data = {"title": "Talking Nerdy", "source": {"branch": {"name": "testpr"}}}
-            api_url = (
-                "https://api.bitbucket.org/2.0/repositories/t1nidog/testpr/pullrequests"
-            )
+            bitflag = True
+            data = {
+                "title": self.title,
+                "source": {
+                    "branch": {
+                        "name": self.branch_name
+                    }
+                },
+                "close_source_branch": True,
+                "merge_strategy": "merge_commit",
+                # "allow_unrelated_histories": True
+            }
+            api_url = f"https://api.bitbucket.org/2.0/repositories/{self.secondary_user}/{self.secondary_repo}/pullrequests"
 
         response = requests.post(api_url, headers=headers, json=data, timeout=30)
         status = response.status_code
+        status_ = False
+        project = Project.objects.get(id=self.project.id)
         if status == 201:
-            self.populate_history(response.content)
+            status_ = True
+            self.populate_history(response.json(), project)
+            activity = f"`{user}` made a pull request to `{self.secondary_repo}` from project `{self.project.name}`"
+        else:
+            pr_res = response.json()
+            pr_res = pr_res.get('errors')[0]['message']
+            if bitflag:
+                pr_res = pr_res.get('error')['message']
+            activity = f"`{user}` made a pull request to `{self.secondary_repo}` failed with response `{pr_res}`"
+
+        log_activity(user=user, activity=activity, project=project, status=status_)
+        print("sfwe")
 
     def run(self):
         """This function runs all functions required to clone, push and merge PRs."""
-        if self.action == "closed":
-            with tempfile.TemporaryDirectory() as parent_dir:
-                self.clone(parent_dir)
-                self.checkout()
-                self.push()
-                self.make_pr()
+        # if self.action == "closed":
+        with tempfile.TemporaryDirectory() as parent_dir:
+            self.clone(parent_dir)
+            self.checkout()
+            self.push()
+            self.make_pr()
