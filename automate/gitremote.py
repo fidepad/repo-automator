@@ -10,9 +10,6 @@ from automate.models import History, Project
 from .utils import log_activity
 
 
-class Tod:
-    pass
-
 
 class GitRemote:
     """Git Remote Class to handle all git related activities."""
@@ -20,9 +17,6 @@ class GitRemote:
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
 
-        self.tod = Tod()
-        self.tod.__dict__ = instance
-        instance = self.tod
         self.primary_access = instance.primary_repo_token
         # Todo: (Mark) Decrypt key here
         self.primary_url = instance.primary_repo_url

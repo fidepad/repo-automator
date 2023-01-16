@@ -7,7 +7,7 @@ from automate.choices import RepoTypeChoices
 from automate.models import Project
 from automate.tasks import add_hook_to_repo_task, init_run_git
 from repo.utils import MakeRequest
-# from encr
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     """Project Serializer."""
@@ -52,23 +52,24 @@ class ProjectSerializer(serializers.ModelSerializer):
         if test_secondary_repo != "ok":
             error = {
                 "error": "Secondary repository not accessible",
-                "info": test_primary_repo,
+                "info": test_secondary_repo,
             }
             raise serializers.ValidationError(error)
 
     def create(self, validated_data):
-        project_ = super().create(validated_data)
+        # Validate repositories here
+        self.validate_repo(validated_data)
+        # project_ = super().create(validated_data)
+        project_ = Project.objects.last()
         context = self.context["request"]
         domain = context.domain
         user_ = UserSerializer(context.user).data
         path = reverse("project:project-webhook", args=(project_.slug,))
         project_webhook_url = domain + path
 
-        # Validate repositories here
-        self.validate_repo(validated_data)
         project = ProjectSerializer(project_)
         # TODO: Applied celery delay
-        add_hook_to_repo_task(
+        add_hook_to_repo_task.delay(
             project_webhook_url,
             user_['email'],
             project.data,

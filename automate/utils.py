@@ -2,6 +2,7 @@ import json
 
 import requests
 from requests import ConnectionError as RequestError, Timeout as ResponseTimeout, ConnectTimeout as RequestTimeout
+
 from .models import ProjectActivities, Project
 from automate.choices import RepoTypeChoices
 from accounts.models import User
@@ -11,6 +12,9 @@ def log_activity(user, activity, project, status=None):
     return
 
 # pylint: disable=duplicate-code
+
+def clean_url(url):
+    return url.replace(" ", "-").strip().lower()
 
 
 def add_hook_to_repo(project_webhook_url, user, project):
@@ -25,6 +29,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
     if project_data['primary_repo_type'] == RepoTypeChoices.GITHUB:
         # Modify webhook_url for github to find it. Change "Repo Name" to "repo-name" to suite git_url
         webhook_url = f"https://api.github.com/repos/{project_data['primary_repo_owner']}/{project_data['primary_repo_name']}/hooks"
+        webhook_url = clean_url(webhook_url)
         payload = {
             "name": "web",
             "active": True,
@@ -42,6 +47,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
                 # Get the remaining endpoint after localhost
                 url = project_webhook_url[21:]
                 payload["config"]["url"] = "https://localtestsite.com" + url
+                break  # To stop the loop
 
         headers = {
             "Accept": "application/vnd.github+json",
