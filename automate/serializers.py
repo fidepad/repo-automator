@@ -13,12 +13,34 @@ class ProjectSerializer(serializers.ModelSerializer):
     """Project Serializer."""
         
     owner = UserSerializer(read_only=True)
+
     class Meta:
         """Metaclass for Project Serializer."""
         model = Project
         fields = "__all__"
         lookup_field = "slug"
         extra_kwargs = {"owner": {"read_only": True}}
+
+    def validate_bitbucket_tokens(self, category="secondary"):
+        """ This ensures Bitbucket repositories get Refresh Token, Client ID and Secrets needed for refreshing
+            bitbucket access token.
+        """
+        data = self.validated_data
+
+        refresh_token = data.get(f"{category}_refresh_token")
+        client_id = data.get(f"{category}_client_id")
+        client_secret = data.get(f"{category}_client_secret")
+
+        # Run a loop through this array and raise a validation error if any is empty
+        credentials = {"refresh_token" : refresh_token, "client_secret" : client_secret, "client_id" : client_id}
+        errors = []
+
+        for key, value in credentials.items():
+            if not value:
+                errors.append(f"{key} is necessary for {category} Bitbucket Authentication.")
+
+        if errors:
+            raise serializers.ValidationError({"error": errors})
 
     def validate_repo(self, attrs):
         """This method was created to be used on create because the repo validation runs even when
@@ -33,6 +55,14 @@ class ProjectSerializer(serializers.ModelSerializer):
         secondary_token = attrs["secondary_repo_token"]
         secondary_repo = attrs["secondary_repo_name"]
         secondary_type = attrs.get("secondary_repo_type")
+
+        # Ensure refresh token, client id and secret are provided for bitbucket
+        if primary_type == RepoTypeChoices.BITBUCKET.value:
+            self.validate_bitbucket_tokens("primary")
+
+        if secondary_type == RepoTypeChoices.BITBUCKET.value:
+            self.validate_bitbucket_tokens()
+
 
         # Validate the owner/token/repo name are all correct and can connect to Repository
 
@@ -59,6 +89,7 @@ class ProjectSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # Validate repositories here
         self.validate_repo(validated_data)
+
         # project_ = super().create(validated_data)
         project_ = Project.objects.last()
         context = self.context["request"]
@@ -136,9 +167,6 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        
-        project = model_to_dict(project)
-        # print(project)
         init_run_git(project, data)
 
     def to_representation(self, instance):

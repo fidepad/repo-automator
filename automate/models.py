@@ -36,6 +36,16 @@ class Project(BaseModel):
     primary_repo_url = models.CharField(
         max_length=500, help_text="The url repository to be copied from"
     )
+    primary_client_id = models.CharField(
+        max_length=100, verbose_name="Primary Bitbucket ClientID", null=True
+    )
+    primary_client_secret = models.CharField(
+        max_length=100, verbose_name="Primary Bitbucket Client Secret", null=True
+    )
+    primary_refresh_token = models.CharField(
+        max_length=100, verbose_name="Primary Bitbucket Refresh Token", null=True
+    )
+
     base = models.CharField(
         max_length=200,
         help_text="The branch you want to target with PR changes. i.e., main",
@@ -58,6 +68,15 @@ class Project(BaseModel):
     )
     secondary_repo_url = models.CharField(
         max_length=500, help_text="The url repository to be copied to"
+    )
+    secondary_client_id = models.CharField(
+        max_length=100, verbose_name="Secondary Bitbucket ClientID", null=True
+    )
+    secondary_client_secret = models.CharField(
+        max_length=100, verbose_name="Secondary Bitbucket Client Secret", null=True
+    )
+    secondary_refresh_token = models.CharField(
+        max_length=100, verbose_name="Secondary Bitbucket Refresh Token", null=True
     )
 
     @property
@@ -94,17 +113,18 @@ class History(BaseModel):
     def __str__(self):
         return f"{self.project}: {self.action}"
 
+
 class ProjectActivities(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     action = models.TextField()
     status = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
-    
+
     class Meta:
-        ordering = ('-created_at',)
-        verbose_name = 'Activity'
-        verbose_name_plural = 'Activities'
-    
+        ordering = ("-created_at",)
+        verbose_name = "Activity"
+        verbose_name_plural = "Activities"
+
     def __str__(self) -> str:
         return self.action

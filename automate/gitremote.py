@@ -10,7 +10,6 @@ from automate.models import History, Project
 from .utils import log_activity
 
 
-
 class GitRemote:
     """Git Remote Class to handle all git related activities."""
 
@@ -143,7 +142,6 @@ class GitRemote:
             activity = f"`{user}` made a pull request to `{self.secondary_repo}` failed with response `{pr_res}`"
 
         log_activity(user=user, activity=activity, project=project, status=status_)
-        print("sfwe")
 
     def run(self):
         """This function runs all functions required to clone, push and merge PRs."""
