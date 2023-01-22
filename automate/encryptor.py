@@ -8,9 +8,9 @@ import base64
 
 
 backend = default_backend()
-info = b'django-fernet-fields'
+info = b"django-fernet-fields"
 # We need reproducible key derivation, so we can't use a random salt
-salt = b'django-fernet-fields-hkdf-salt'
+salt = b"django-fernet-fields-hkdf-salt"
 
 
 class Crypt:
@@ -35,12 +35,24 @@ class Crypt:
 
     def encrypt(self, message):
         """This function encrypts the message."""
-        message_bytes = message.encode()
-        encrypted_message = self.fernet.encrypt(message_bytes)
-        return encrypted_message.decode()
+        if message:
+            message_bytes = message.encode()
+            encrypted_message = self.fernet.encrypt(message_bytes)
+            return encrypted_message.decode()
+        return None
 
     def decrypt(self, encrypted_message):
         """This function decrypts the function."""
-        encrypted_message_bytes = encrypted_message.encode()
-        decrypted_message = self.fernet.decrypt(encrypted_message_bytes)
-        return decrypted_message.decode()
+        if encrypted_message:
+            encrypted_message_bytes = encrypted_message.encode()
+            decrypted_message = self.fernet.decrypt(encrypted_message_bytes)
+            return decrypted_message.decode()
+        return None
+
+    def multi_decrypt(self, messages: dict):
+        """This method returns the decrypted versions of information sent to it in a dictionary."""
+        for key, value in messages.items():
+            if value:
+                messages[key] = self.decrypt(value)
+
+        return messages

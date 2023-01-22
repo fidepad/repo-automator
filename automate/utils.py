@@ -1,17 +1,27 @@
 import json
 
 import requests
-from requests import ConnectionError as RequestError, Timeout as ResponseTimeout, ConnectTimeout as RequestTimeout
+from requests import (
+    ConnectionError as RequestError,
+    Timeout as ResponseTimeout,
+    ConnectTimeout as RequestTimeout,
+)
 
 from .models import ProjectActivities, Project
 from automate.choices import RepoTypeChoices
 from accounts.models import User
+from repo.utils import MakeRequest
+
 
 def log_activity(user, activity, project, status=None):
-    ProjectActivities.objects.create(user=user, project=project, action=activity, status=status)
+    ProjectActivities.objects.create(
+        user=user, project=project, action=activity, status=status
+    )
     return
 
+
 # pylint: disable=duplicate-code
+
 
 def clean_url(url):
     return url.replace(" ", "-").strip().lower()
@@ -26,7 +36,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
         repo_token (str): The token for authenticating the request to the repository's webhooks API.
     """
     project_data = project
-    if project_data['primary_repo_type'] == RepoTypeChoices.GITHUB:
+    if project_data["primary_repo_type"] == RepoTypeChoices.GITHUB:
         # Modify webhook_url for github to find it. Change "Repo Name" to "repo-name" to suite git_url
         webhook_url = f"https://api.github.com/repos/{project_data['primary_repo_owner']}/{project_data['primary_repo_name']}/hooks"
         webhook_url = clean_url(webhook_url)
@@ -40,7 +50,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
                 "insecure_ssl": "1",
             },
         }
-        not_allowed = ['127.0.0.1', 'localhost', '0.0.0.0']
+        not_allowed = ["127.0.0.1", "localhost", "0.0.0.0"]
         # Modify payload url if it's localhost to not fail validation
         for host in not_allowed:
             if host in payload["config"]["url"]:
@@ -61,11 +71,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
             "description": f"Auto webhook to {project_data['secondary_repo_name']}",
             "url": "%s" % project_webhook_url,
             "active": True,
-            "events": [
-                "repo:push",
-                "issue:created",
-                "issue:updated"
-            ]
+            "events": ["repo:push", "issue:created", "issue:updated"],
         }
         headers = {
             "Accept": "application/json",
@@ -84,7 +90,7 @@ def add_hook_to_repo(project_webhook_url, user, project):
     if response:
         status = False
         user = User.objects.get(email=user)
-        project = Project.objects.get(id=project_data['id'])
+        project = Project.objects.get(id=project_data["id"])
         activity = f"{user} initialized a project, webhook create status -> {response.status_code}"
         if response.status_code in [200, 201]:
             status = True
@@ -93,3 +99,22 @@ def add_hook_to_repo(project_webhook_url, user, project):
     #  and what passes. So that you can retry again.
     #  Also, Log status code
     return response
+
+
+def refresh_bitbucket_token(credentials: dict):
+    """This function accepts a dictionary of credentials needed to generate a new access token."""
+    url = "https://bitbucket.org/site/oauth2/access_token"
+    data = {
+        "grant_type": "refresh_token",
+        "refresh_token": credentials["refresh_token"],
+        "client_id": credentials["client_id"],
+        "client_secret": credentials["client_secret"],
+    }
+    req = MakeRequest(url)
+    response = req.post(data)
+    content = response.json()
+    status = response.status_code
+    if status == 200:
+        return content.get("access_token")
+    else:
+        return content
