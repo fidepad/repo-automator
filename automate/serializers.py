@@ -109,8 +109,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         # Validate repositories here
         self.validate_repo(validated_data)
 
-        # project_ = super().create(validated_data)
-        project_ = Project.objects.last()
+        project_ = super().create(validated_data)
+        # project_ = Project.objects.last()
         context = self.context["request"]
         domain = context.domain
         user_ = UserSerializer(context.user).data
@@ -119,7 +119,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         project = ProjectSerializer(project_)
         # TODO: Applied celery delay
-        add_hook_to_repo_task.delay(
+        add_hook_to_repo_task(
             project_webhook_url,
             user_["email"],
             project.data,

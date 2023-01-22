@@ -36,14 +36,14 @@ class Project(BaseModel):
     primary_repo_url = models.CharField(
         max_length=500, help_text="The url repository to be copied from"
     )
-    primary_client_id = models.CharField(
-        max_length=100, verbose_name="Primary Bitbucket ClientID", null=True
+    primary_client_id = models.TextField(
+        verbose_name="Primary Bitbucket ClientID", null=True
     )
-    primary_client_secret = models.CharField(
-        max_length=100, verbose_name="Primary Bitbucket Client Secret", null=True
+    primary_client_secret = models.TextField(
+        verbose_name="Primary Bitbucket Client Secret", null=True
     )
-    primary_refresh_token = models.CharField(
-        max_length=100, verbose_name="Primary Bitbucket Refresh Token", null=True
+    primary_refresh_token = models.TextField(
+        verbose_name="Primary Bitbucket Refresh Token", null=True
     )
 
     base = models.CharField(
@@ -69,14 +69,14 @@ class Project(BaseModel):
     secondary_repo_url = models.CharField(
         max_length=500, help_text="The url repository to be copied to"
     )
-    secondary_client_id = models.CharField(
-        max_length=100, verbose_name="Secondary Bitbucket ClientID", null=True
+    secondary_client_id = models.TextField(
+        verbose_name="Secondary Bitbucket ClientID", null=True
     )
-    secondary_client_secret = models.CharField(
-        max_length=100, verbose_name="Secondary Bitbucket Client Secret", null=True
+    secondary_client_secret = models.TextField(
+        verbose_name="Secondary Bitbucket Client Secret", null=True
     )
-    secondary_refresh_token = models.CharField(
-        max_length=100, verbose_name="Secondary Bitbucket Refresh Token", null=True
+    secondary_refresh_token = models.TextField(
+        verbose_name="Secondary Bitbucket Refresh Token", null=True
     )
 
     @property

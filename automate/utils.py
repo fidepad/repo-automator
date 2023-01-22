@@ -8,9 +8,12 @@ from requests import (
 )
 
 from .models import ProjectActivities, Project
-from automate.choices import RepoTypeChoices
 from accounts.models import User
+from automate.choices import RepoTypeChoices
+from automate.encryptor import Crypt
 from repo.utils import MakeRequest
+
+crypt = Crypt()
 
 
 def log_activity(user, activity, project, status=None):
@@ -36,6 +39,10 @@ def add_hook_to_repo(project_webhook_url, user, project):
         repo_token (str): The token for authenticating the request to the repository's webhooks API.
     """
     project_data = project
+    # Decrypt access tokens
+    project_data["primary_repo_token"] = crypt.decrypt(project_data["primary_repo_token"])
+    project_data["secondary_repo_token"] = crypt.decrypt(project_data["secondary_repo_token"])
+
     if project_data["primary_repo_type"] == RepoTypeChoices.GITHUB:
         # Modify webhook_url for github to find it. Change "Repo Name" to "repo-name" to suite git_url
         webhook_url = f"https://api.github.com/repos/{project_data['primary_repo_owner']}/{project_data['primary_repo_name']}/hooks"
