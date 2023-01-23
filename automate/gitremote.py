@@ -127,6 +127,7 @@ class GitRemote:
             bitflag = True
             data = {
                 "title": self.title,
+                "description": self.body,
                 "source": {
                     "branch": {
                         "name": self.branch_name

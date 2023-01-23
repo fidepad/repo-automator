@@ -6,7 +6,7 @@ from automate.choices import RepoTypeChoices
 from automate.encryptor import Crypt
 from automate.gitremote import GitRemote
 from automate.models import History, Project
-from automate.utils import add_hook_to_repo
+from automate.utils import add_hook_to_repo, refresh_bitbucket_token, log_activity
 from repo.utils import MakeRequest, logger
 
 crypt = Crypt()
@@ -35,8 +35,8 @@ def check_new_comments():
 
         for pr in open_pr:
             # Setup headers
-            primary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.primary_token)}"}
-            secondary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.secondary_token)}"}
+            primary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.primary_repo_token)}"}
+            secondary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.secondary_repo_token)}"}
 
             # Urls
             primary_url = pr.primary_url
@@ -45,6 +45,8 @@ def check_new_comments():
             # Initialize MakeRequest
             pri_req = MakeRequest(primary_url, primary_header)
             sec_req = MakeRequest(secondary_url, secondary_header)
+
+            owner = pr.project.owner
 
             # Check if the secondary PR is github or bitbucket for merging operations
             if pr.project.secondary_repo_type == RepoTypeChoices.GITHUB.value:
@@ -55,15 +57,51 @@ def check_new_comments():
                     # Merge the primary PR and not proceed to updating comments
                     data = {
                         "commit_title": "Pull requests merged automatically.",
-                        "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo}
+                        "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo_name}
                                         ({secondary_url})""",
                     }
                     response = pri_req.put(data, json=True, url=pri_req.url + "/merge")
+
                     # Todo: get status code and break out
                     break  # steps out of the loop
             else:
-                # Todo: Code for merging PR in bitbucket repo
-                pass
+                # Refresh Token
+                credentials = {
+                    "refresh_token": pr.project.secondary_refresh_token,
+                    "client_id": pr.project.secondary_client_id,
+                    "client_secret": pr.project.secondary_client_secret
+                }
+                credentials = crypt.multi_decrypt(credentials)
+                new_token = refresh_bitbucket_token(credentials)
+                new_header = {"Authorization": f"Bearer {new_token}"}
+                # checks if secondary PR is merged
+                req = MakeRequest(secondary_url, new_header)
+                response = req.get()
+                content = response.json()
+
+                if content.get("state") == "MERGED":
+                    # Here we merge the primary github account
+                    merge_commit = content.get("merge_commit")["links"]
+                    data = {
+                        "commit_title": "Pull requests merged automatically.",
+                        "commit_message": f"""This pull request has been merged from {pr.project.secondary_repo_name}
+                                            ({merge_commit['self']} and {merge_commit['html']})""",
+                    }
+                    response = pri_req.put(data, json=True, url=pri_req.url + "/merge")
+                    status_code = response.status_code
+                    if status_code == 200:
+                        # Update Open PR History
+                        pr.action = "merged"
+                        pr.merged_at = content.get("updated_on")
+                        pr.save()
+
+                        activity = f"`{owner}`; {pr.project.primary_repo_name} was automatically merged with {pr.project.secondary_repo_name}. Passed with response `{status_code}`"
+                        log_activity(user=owner, activity=activity, project=pr.project, status=True)
+                    else:
+                        content = response.json()
+                        activity = f"`{owner}`; {pr.project.primary_repo_name} couldn't merged with {pr.project.secondary_repo_name}. Failed with response `{status_code}`. Reason is :{content.get('message')}"
+                        log_activity(user=owner, activity=activity, project=pr.project, status=True)
+                    break
 
             if pr.project.secondary_repo_type == RepoTypeChoices.GITHUB.value:
                 # Get the number of comments existing in the PR online
@@ -134,6 +172,7 @@ def check_new_comments():
                                 # Increment comments
                                 pr.comments = len(comments_not_in_primary)
                                 pr.save()
+                                # log_activity(user=user, activity=activity, project=project, status=status_)
                         except AttributeError as err:
                             logger.error(err)
                             logger.critical(response)

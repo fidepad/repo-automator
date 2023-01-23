@@ -231,7 +231,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git.delay(project, data)
+        init_run_git(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
