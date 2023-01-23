@@ -3,10 +3,13 @@ import json
 from celery import shared_task
 
 from automate.choices import RepoTypeChoices
+from automate.encryptor import Crypt
 from automate.gitremote import GitRemote
 from automate.models import History, Project
 from automate.utils import add_hook_to_repo
 from repo.utils import MakeRequest, logger
+
+crypt = Crypt()
 
 
 @shared_task()
@@ -32,8 +35,8 @@ def check_new_comments():
 
         for pr in open_pr:
             # Setup headers
-            primary_header = {"Authorization": f"Bearer {pr.project.primary_token}"}
-            secondary_header = {"Authorization": f"Bearer {pr.project.secondary_token}"}
+            primary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.primary_token)}"}
+            secondary_header = {"Authorization": f"Bearer {crypt.decrypt(pr.project.secondary_token)}"}
 
             # Urls
             primary_url = pr.primary_url

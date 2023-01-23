@@ -7,8 +7,8 @@ from requests import (
     ConnectTimeout as RequestTimeout,
 )
 
-from .models import ProjectActivities, Project
 from accounts.models import User
+from automate.models import ProjectActivities, Project
 from automate.choices import RepoTypeChoices
 from automate.encryptor import Crypt
 from repo.utils import MakeRequest
@@ -30,15 +30,13 @@ def clean_url(url):
     return url.replace(" ", "-").strip().lower()
 
 
-def add_hook_to_repo(project_webhook_url, user, project):
+def add_hook_to_repo(project_webhook_url, user, project_data):
     """Add a webhook to a repository.
     Parameters:
         project_webhook_url (str): The URL of the webhook to be added to the repository.
-        webhook_url (str): The URL of the repository's webhooks API endpoint.
-        repo_type (RepoTypeChoices): The type of repository (GitHub or Bitbucket).
-        repo_token (str): The token for authenticating the request to the repository's webhooks API.
+        project (Project): The newly created project.
+        user (User): User attached to the project.
     """
-    project_data = project
     # Decrypt access tokens
     project_data["primary_repo_token"] = crypt.decrypt(project_data["primary_repo_token"])
     project_data["secondary_repo_token"] = crypt.decrypt(project_data["secondary_repo_token"])
@@ -100,11 +98,10 @@ def add_hook_to_repo(project_webhook_url, user, project):
         project = Project.objects.get(id=project_data["id"])
         activity = f"{user} initialized a project, webhook create status -> {response.status_code}"
         if response.status_code in [200, 201]:
+
             status = True
         log_activity(user=user, activity=activity, status=status, project=project)
-    # TODO: Would be nice to add this to an Activity Log, This way you know what fails
-    #  and what passes. So that you can retry again.
-    #  Also, Log status code
+
     return response
 
 

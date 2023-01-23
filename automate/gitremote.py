@@ -6,8 +6,10 @@ from git import Repo
 
 from automate.choices import RepoTypeChoices
 from automate.models import History, Project
-# from automate.views import ProjectSerializer
-from .utils import log_activity
+from automate.encryptor import Crypt
+from automate.utils import log_activity, refresh_bitbucket_token
+
+crypt = Crypt()
 
 
 class GitRemote:
@@ -16,14 +18,14 @@ class GitRemote:
     def __init__(self, instance, data):
         """The initialization point of the git remote class."""
 
-        self.primary_access = instance.primary_repo_token
-        # Todo: (Mark) Decrypt key here
+        self.primary_access = crypt.decrypt(instance.primary_repo_token)
+
         self.primary_url = instance.primary_repo_url
         self.primary_type = instance.primary_repo_type
         self.primary_user = instance.primary_repo_owner
         self.branch_name = data["pull_request"]["head"]["ref"]
-        self.secondary_access = instance.secondary_repo_token
-        # Todo: (Mark) Decrypt key here
+        self.secondary_access = crypt.decrypt(instance.secondary_repo_token)
+
         self.secondary_url = instance.secondary_repo_url
         self.secondary_user = instance.secondary_repo_owner
         self.secondary_repo = instance.secondary_repo_name.replace(" ", "-").lower()
@@ -67,6 +69,15 @@ class GitRemote:
             )
 
         elif self.secondary_type == RepoTypeChoices.BITBUCKET:
+            # Due to bitbucket expiring token, we would always refresh bitbucket token here
+            credentials = {
+                "refresh_token": self.project.secondary_refresh_token,
+                "client_id": self.project.secondary_client_id,
+                "client_secret": self.project.secondary_client_secret
+            }
+            credentials = crypt.multi_decrypt(credentials)
+            self.secondary_access = refresh_bitbucket_token(credentials)
+
             push_to = self.secondary_url.replace(
                 f"https://{self.secondary_user}",
                 f"https://{self.secondary_user}:{self.secondary_access}",
@@ -82,19 +93,20 @@ class GitRemote:
         History.objects.create(
             project=project,
             pr_id=content.get("id"),
-            action=content.get("state"),
+            action=content.get("state").lower(),
             body=content.get("body") if content.get("body") else content.get("description"),
             primary_url=self.pr_url,
-            url=content.get("url") if content.get("url") else "no url" ,
-            author=content.get("user")["login"] if content.get("user") else "no author",
+            url=content.get("url") if content.get("url") else content.get("links")["self"]["href"],
+            author=content.get("user")["login"] if content.get("user") else content.get("author")["display_name"],
             merged_at=content.get("merged_at") if content.get("merged_at") else None,
-            closed_at=content.get("closed_at") if content.get("closed_at") else None,
+            closed_at=content.get("closed_at") if content.get("closed_at") else content.get("closed_by"),
         )
 
     def make_pr(self):
         """This method handles the creating of a new PR in the secondary repository."""
         user = Project.objects.get(name=self.project.name)
         user = user.owner
+        bitflag = False
         headers = {
             "Authorization": f"Bearer {self.secondary_access}",
         }
@@ -120,9 +132,14 @@ class GitRemote:
                         "name": self.branch_name
                     }
                 },
+                "destination": {
+                    "branch": {
+                        "name": self.base
+                    }
+                },
                 "close_source_branch": True,
                 "merge_strategy": "merge_commit",
-                # "allow_unrelated_histories": True
+                "allow_unrelated_histories": True
             }
             api_url = f"https://api.bitbucket.org/2.0/repositories/{self.secondary_user}/{self.secondary_repo}/pullrequests"
 
@@ -136,18 +153,22 @@ class GitRemote:
             activity = f"`{user}` made a pull request to `{self.secondary_repo}` from project `{self.project.name}`"
         else:
             pr_res = response.json()
-            pr_res = pr_res.get('errors')[0]['message']
             if bitflag:
-                pr_res = pr_res.get('error')['message']
+                # bitbucket error
+                pr_res = pr_res.get("error").get("message")
+            else:
+                # github error
+                pr_res = pr_res.get('errors')[0]['message']
+
             activity = f"`{user}` made a pull request to `{self.secondary_repo}` failed with response `{pr_res}`"
 
         log_activity(user=user, activity=activity, project=project, status=status_)
 
     def run(self):
         """This function runs all functions required to clone, push and merge PRs."""
-        # if self.action == "closed":
-        with tempfile.TemporaryDirectory() as parent_dir:
-            self.clone(parent_dir)
-            self.checkout()
-            self.push()
-            self.make_pr()
+        if self.action == "closed":
+            with tempfile.TemporaryDirectory() as parent_dir:
+                self.clone(parent_dir)
+                self.checkout()
+                self.push()
+                self.make_pr()

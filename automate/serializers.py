@@ -119,7 +119,7 @@ class ProjectSerializer(serializers.ModelSerializer):
 
         project = ProjectSerializer(project_)
         # TODO: Applied celery delay
-        add_hook_to_repo_task(
+        add_hook_to_repo_task.delay(
             project_webhook_url,
             user_["email"],
             project.data,
@@ -231,7 +231,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git(project, data)
+        init_run_git.delay(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)
