@@ -115,6 +115,8 @@ class History(BaseModel):
 
 
 class ProjectActivities(models.Model):
+    """Project Activities Model."""
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
     action = models.TextField()
@@ -122,9 +124,11 @@ class ProjectActivities(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
+        """Meta class for Project Activities."""
+
         ordering = ("-created_at",)
         verbose_name = "Activity"
         verbose_name_plural = "Activities"
 
-    def __str__(self) -> str:
-        return self.action
+    def __str__(self):
+        return f"{self.action}"

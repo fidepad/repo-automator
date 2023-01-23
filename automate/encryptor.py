@@ -1,11 +1,11 @@
-from cryptography.fernet import Fernet
-from django.conf import settings
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.hkdf import HKDF
-from cryptography.hazmat.backends import default_backend
-from django.utils.encoding import force_bytes
 import base64
 
+from cryptography.fernet import Fernet
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.hkdf import HKDF
+from django.conf import settings
+from django.utils.encoding import force_bytes
 
 backend = default_backend()
 info = b"django-fernet-fields"

@@ -30,9 +30,8 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             )
             add_hook_to_repo(
                 project_webhook_url=url,
-                webhook_url=project.primary_repo_webhook_url,
-                repo_type=RepoTypeChoices.GITHUB,
-                repo_token=project.primary_repo_token,
+                user=project.owner.email,
+                project_data=project,
             )
 
             expected_payload = {
@@ -87,9 +86,8 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             }
             add_hook_to_repo(
                 project_webhook_url=url,
-                webhook_url=project.primary_repo_webhook_url,
-                repo_type=RepoTypeChoices.BITBUCKET,
-                repo_token=project.primary_repo_token,
+                user=project.owner.email,
+                project_data=project,
             )
             post_mock.assert_called_with(
                 project.primary_repo_webhook_url,

@@ -6,38 +6,58 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('automate', '0005_alter_history_body'),
+        ("automate", "0005_alter_history_body"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='project',
-            name='primary_client_id',
-            field=models.CharField(max_length=100, null=True, verbose_name='Primary Bitbucket ClientID'),
+            model_name="project",
+            name="primary_client_id",
+            field=models.CharField(
+                max_length=100, null=True, verbose_name="Primary Bitbucket ClientID"
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='primary_client_secret',
-            field=models.CharField(max_length=100, null=True, verbose_name='Primary Bitbucket Client Secret'),
+            model_name="project",
+            name="primary_client_secret",
+            field=models.CharField(
+                max_length=100,
+                null=True,
+                verbose_name="Primary Bitbucket Client Secret",
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='primary_refresh_token',
-            field=models.CharField(max_length=100, null=True, verbose_name='Primary Bitbucket Refresh Token'),
+            model_name="project",
+            name="primary_refresh_token",
+            field=models.CharField(
+                max_length=100,
+                null=True,
+                verbose_name="Primary Bitbucket Refresh Token",
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='secondary_client_id',
-            field=models.CharField(max_length=100, null=True, verbose_name='Secondary Bitbucket ClientID'),
+            model_name="project",
+            name="secondary_client_id",
+            field=models.CharField(
+                max_length=100, null=True, verbose_name="Secondary Bitbucket ClientID"
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='secondary_client_secret',
-            field=models.CharField(max_length=100, null=True, verbose_name='Secondary Bitbucket Client Secret'),
+            model_name="project",
+            name="secondary_client_secret",
+            field=models.CharField(
+                max_length=100,
+                null=True,
+                verbose_name="Secondary Bitbucket Client Secret",
+            ),
         ),
         migrations.AddField(
-            model_name='project',
-            name='secondary_refresh_token',
-            field=models.CharField(max_length=100, null=True, verbose_name='Secondary Bitbucket Refresh Token'),
+            model_name="project",
+            name="secondary_refresh_token",
+            field=models.CharField(
+                max_length=100,
+                null=True,
+                verbose_name="Secondary Bitbucket Refresh Token",
+            ),
         ),
     ]

@@ -1,12 +1,11 @@
-import json
 import tempfile
 
 import requests
 from git import Repo
 
 from automate.choices import RepoTypeChoices
-from automate.models import History, Project
 from automate.encryptor import Crypt
+from automate.models import History, Project
 from automate.utils import log_activity, refresh_bitbucket_token
 
 crypt = Crypt()
@@ -73,7 +72,7 @@ class GitRemote:
             credentials = {
                 "refresh_token": self.project.secondary_refresh_token,
                 "client_id": self.project.secondary_client_id,
-                "client_secret": self.project.secondary_client_secret
+                "client_secret": self.project.secondary_client_secret,
             }
             credentials = crypt.multi_decrypt(credentials)
             self.secondary_access = refresh_bitbucket_token(credentials)
@@ -94,12 +93,20 @@ class GitRemote:
             project=project,
             pr_id=content.get("id"),
             action=content.get("state").lower(),
-            body=content.get("body") if content.get("body") else content.get("description"),
+            body=content.get("body")
+            if content.get("body")
+            else content.get("description"),
             primary_url=self.pr_url,
-            url=content.get("url") if content.get("url") else content.get("links")["self"]["href"],
-            author=content.get("user")["login"] if content.get("user") else content.get("author")["display_name"],
+            url=content.get("url")
+            if content.get("url")
+            else content.get("links")["self"]["href"],
+            author=content.get("user")["login"]
+            if content.get("user")
+            else content.get("author")["display_name"],
             merged_at=content.get("merged_at") if content.get("merged_at") else None,
-            closed_at=content.get("closed_at") if content.get("closed_at") else content.get("closed_by"),
+            closed_at=content.get("closed_at")
+            if content.get("closed_at")
+            else content.get("closed_by"),
         )
 
     def make_pr(self):
@@ -118,7 +125,7 @@ class GitRemote:
                 "head": self.branch_name,
                 "base": self.base,
                 "maintainer_can_modify": True,
-                "allow_unrelated_histories": True
+                "allow_unrelated_histories": True,
             }
 
             api_url = f"https://api.github.com/repos/{self.secondary_user}/{self.secondary_repo}/pulls"
@@ -128,19 +135,11 @@ class GitRemote:
             data = {
                 "title": self.title,
                 "description": self.body,
-                "source": {
-                    "branch": {
-                        "name": self.branch_name
-                    }
-                },
-                "destination": {
-                    "branch": {
-                        "name": self.base
-                    }
-                },
+                "source": {"branch": {"name": self.branch_name}},
+                "destination": {"branch": {"name": self.base}},
                 "close_source_branch": True,
                 "merge_strategy": "merge_commit",
-                "allow_unrelated_histories": True
+                "allow_unrelated_histories": True,
             }
             api_url = f"https://api.bitbucket.org/2.0/repositories/{self.secondary_user}/{self.secondary_repo}/pullrequests"
 
@@ -159,7 +158,7 @@ class GitRemote:
                 pr_res = pr_res.get("error").get("message")
             else:
                 # github error
-                pr_res = pr_res.get('errors')[0]['message']
+                pr_res = pr_res.get("errors")[0]["message"]
 
             activity = f"`{user}` made a pull request to `{self.secondary_repo}` failed with response `{pr_res}`"
 

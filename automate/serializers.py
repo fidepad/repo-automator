@@ -1,12 +1,12 @@
 from django.conf import settings
 from rest_framework import serializers
 from rest_framework.reverse import reverse
-from django.forms.models import model_to_dict
+
 from accounts.serializers import UserSerializer
 from automate.choices import RepoTypeChoices
+from automate.encryptor import Crypt
 from automate.models import Project
 from automate.tasks import add_hook_to_repo_task, init_run_git
-from automate.encryptor import Crypt
 from automate.utils import refresh_bitbucket_token
 from repo.utils import MakeRequest
 
@@ -231,7 +231,7 @@ class WebHookSerializer(serializers.Serializer):
 
     def clone_push_make_pr(self, project, data):
         """This method runs the cloning and pushing process. This should be moved into tasks."""
-        init_run_git(project, data)
+        init_run_git.delay(project, data)
 
     def to_representation(self, instance):
         data = super().to_representation(instance)

@@ -5,8 +5,8 @@ from celery import shared_task
 from automate.choices import RepoTypeChoices
 from automate.encryptor import Crypt
 from automate.gitremote import GitRemote
-from automate.models import History, Project
-from automate.utils import add_hook_to_repo, refresh_bitbucket_token, log_activity
+from automate.models import History
+from automate.utils import add_hook_to_repo, log_activity, refresh_bitbucket_token
 from repo.utils import MakeRequest, logger
 
 crypt = Crypt()
@@ -84,7 +84,7 @@ def check_new_comments():
                     }
                     response = pri_req.put(data, json=True, url=pri_req.url + "/merge")
                     status_code = response.status_code
-                    if status_code == 200 or status_code == 201:
+                    if status_code in (200, 201):
                         # Update Open PR History
                         pr.action = "merged"
                         pr.save()
@@ -252,10 +252,9 @@ def check_new_comments():
                     if not primary_comments:
                         # If there are no comments existing in the primary repository,
                         # Add all secondary comments to the repository
-                        comments_not_in_primary.append({
-                            "body": sub_comment,
-                            "commit_id": commit_id
-                        })
+                        comments_not_in_primary.append(
+                            {"body": sub_comment, "commit_id": commit_id}
+                        )
                     else:
                         for pri_comment in primary_comments:
                             primary_sub_comment = pri_comment.get("body")
@@ -269,17 +268,18 @@ def check_new_comments():
                                 break
 
                         if not counter:
-                            comments_not_in_primary.append({
-                                "body": sub_comment,
-                                "commit_id": commit_id
-                            })
+                            comments_not_in_primary.append(
+                                {"body": sub_comment, "commit_id": commit_id}
+                            )
 
                 # Next we check if the length of the content (comments) matches the comment field
                 if comments_not_in_primary:
                     # Update the primary PR with comments
                     for data in comments_not_in_primary:
                         try:
-                            response = pri_req.post(url=pri_req.url + "/comments", data=data, json=True)
+                            response = pri_req.post(
+                                url=pri_req.url + "/comments", data=data, json=True
+                            )
                             status = response.status_code
                             content = response.json()
                             if status == 201:

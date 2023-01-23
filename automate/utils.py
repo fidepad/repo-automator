@@ -1,32 +1,31 @@
 import json
 
 import requests
-from requests import (
-    ConnectionError as RequestError,
-    Timeout as ResponseTimeout,
-    ConnectTimeout as RequestTimeout,
-)
+from requests import ConnectionError as RequestError
+from requests import ConnectTimeout as RequestTimeout
+from requests import Timeout as ResponseTimeout
 
 from accounts.models import User
-from automate.models import ProjectActivities, Project
 from automate.choices import RepoTypeChoices
 from automate.encryptor import Crypt
+from automate.models import Project, ProjectActivities
 from repo.utils import MakeRequest
 
 crypt = Crypt()
 
 
 def log_activity(user, activity, project, status=None):
+    """Log activity function."""
     ProjectActivities.objects.create(
         user=user, project=project, action=activity, status=status
     )
-    return
 
 
 # pylint: disable=duplicate-code
 
 
 def clean_url(url):
+    """Simple function to remove spaces in url and turn them to hyphens."""
     return url.replace(" ", "-").strip().lower()
 
 
@@ -34,17 +33,21 @@ def add_hook_to_repo(project_webhook_url, user, project_data):
     """Add a webhook to a repository.
     Parameters:
         project_webhook_url (str): The URL of the webhook to be added to the repository.
-        project (Project): The newly created project.
+        project_data (Project): The newly created project.
         user (User): User attached to the project.
     """
     # Decrypt access tokens
-    project_data["primary_repo_token"] = crypt.decrypt(project_data["primary_repo_token"])
-    project_data["secondary_repo_token"] = crypt.decrypt(project_data["secondary_repo_token"])
+    project_data["primary_repo_token"] = crypt.decrypt(
+        project_data["primary_repo_token"]
+    )
+    project_data["secondary_repo_token"] = crypt.decrypt(
+        project_data["secondary_repo_token"]
+    )
 
     if project_data["primary_repo_type"] == RepoTypeChoices.GITHUB:
         # Modify webhook_url for github to find it. Change "Repo Name" to "repo-name" to suite git_url
-        webhook_url = f"https://api.github.com/repos/{project_data['primary_repo_owner']}/{project_data['primary_repo_name']}/hooks"
-        webhook_url = clean_url(webhook_url)
+        _url = f"https://api.github.com/repos/{project_data['primary_repo_owner']}/{project_data['primary_repo_name']}/hooks"
+        webhook_url = clean_url(_url)
         payload = {
             "name": "web",
             "active": True,
@@ -120,5 +123,4 @@ def refresh_bitbucket_token(credentials: dict):
     status = response.status_code
     if status == 200:
         return content.get("access_token")
-    else:
-        return content
+    return content
