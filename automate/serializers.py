@@ -27,9 +27,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         extra_kwargs = {"owner": {"read_only": True}}
 
     def validate_bitbucket_tokens(self, category="secondary"):
-        """This ensures Bitbucket repositories get Refresh Token, Client ID and Secrets needed for refreshing
-        bitbucket access token.
-        """
+        """This ensures Bitbucket repositories get Refresh Token, Client ID and
+        Secrets needed for refreshing bitbucket access token."""
         data = self.validated_data
 
         refresh_token = data.get(f"{category}_refresh_token")
@@ -54,9 +53,9 @@ class ProjectSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"error": errors})
 
     def validate_repo(self, attrs):
-        """This method was created to be used on create because the repo validation runs even when
-        user wants to update project and it fails on testing as the parameters weren't provided.
-        """
+        """This method was created to be used on create because the repo
+        validation runs even when user wants to update project and it fails on
+        testing as the parameters weren't provided."""
         primary_user = attrs["primary_repo_owner"]
         primary_repo = attrs["primary_repo_name"]
         primary_type = attrs.get("primary_repo_type")
@@ -206,7 +205,8 @@ class RepoSerializer(serializers.Serializer):
 
 
 class HeadSerializer(serializers.Serializer):
-    """Head Serializer for the project that contains information about the branch and the repository."""
+    """Head Serializer for the project that contains information about the
+    branch and the repository."""
 
     ref = serializers.CharField()
     repo = RepoSerializer()
@@ -230,7 +230,10 @@ class WebHookSerializer(serializers.Serializer):
     pull_request = PullRequestSerializer()
 
     def clone_push_make_pr(self, project, data):
-        """This method runs the cloning and pushing process. This should be moved into tasks."""
+        """This method runs the cloning and pushing process.
+
+        This should be moved into tasks.
+        """
         init_run_git.delay(project, data)
 
     def to_representation(self, instance):

@@ -21,9 +21,7 @@ class Crypt:
         self.fernet = Fernet(self.derive_fernet_key(self.key))
 
     def derive_fernet_key(self, key):
-        """
-        Salt key for fernet
-        """
+        """Salt key for fernet."""
         hkdf = HKDF(
             algorithm=hashes.SHA256(),
             length=32,
@@ -50,7 +48,8 @@ class Crypt:
         return None
 
     def multi_decrypt(self, messages: dict):
-        """This method returns the decrypted versions of information sent to it in a dictionary."""
+        """This method returns the decrypted versions of information sent to it
+        in a dictionary."""
         for key, value in messages.items():
             if value:
                 messages[key] = self.decrypt(value)

@@ -39,7 +39,8 @@ class GitRemote:
         self.repository = None
 
     def clone(self, temp_dir):
-        """This function clones the primary repository into a temporary folder."""
+        """This function clones the primary repository into a temporary
+        folder."""
         clone_from = ""
 
         if self.primary_type == RepoTypeChoices.GITHUB:
@@ -110,7 +111,8 @@ class GitRemote:
         )
 
     def make_pr(self):
-        """This method handles the creating of a new PR in the secondary repository."""
+        """This method handles the creating of a new PR in the secondary
+        repository."""
         user = Project.objects.get(name=self.project.name)
         user = user.owner
         bitflag = False
@@ -165,7 +167,8 @@ class GitRemote:
         log_activity(user=user, activity=activity, project=project, status=status_)
 
     def run(self):
-        """This function runs all functions required to clone, push and merge PRs."""
+        """This function runs all functions required to clone, push and merge
+        PRs."""
         if self.action == "closed":
             with tempfile.TemporaryDirectory() as parent_dir:
                 self.clone(parent_dir)

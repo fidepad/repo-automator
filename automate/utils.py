@@ -31,6 +31,7 @@ def clean_url(url):
 
 def add_hook_to_repo(project_webhook_url, user, project_data):
     """Add a webhook to a repository.
+
     Parameters:
         project_webhook_url (str): The URL of the webhook to be added to the repository.
         project_data (Project): The newly created project.
@@ -109,7 +110,8 @@ def add_hook_to_repo(project_webhook_url, user, project_data):
 
 
 def refresh_bitbucket_token(credentials: dict):
-    """This function accepts a dictionary of credentials needed to generate a new access token."""
+    """This function accepts a dictionary of credentials needed to generate a
+    new access token."""
     url = "https://bitbucket.org/site/oauth2/access_token"
     data = {
         "grant_type": "refresh_token",

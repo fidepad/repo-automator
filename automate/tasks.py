@@ -20,13 +20,14 @@ def add_hook_to_repo_task(project_webhook_url, user, project):
 
 @shared_task()
 def init_run_git(project, data):
-    """This is a delayed method to initialize and run git processes"""
+    """This is a delayed method to initialize and run git processes."""
     git = GitRemote(instance=project, data=data)
     git.run()
 
 
 def bitbucket_refresh_access_token(project):
     """This function was created to refresh the access token.
+
     :param
         project (Project): an instance where credentials would be fetched
     :return
