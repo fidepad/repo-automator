@@ -26,8 +26,8 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             project = ProjectFactory(
                 primary_repo_owner="fidepad",
                 primary_repo_name="primary",
-                primary_repo_token="gAAAAABjz9lnHrj2hOtmb1eAE3hQYo3DKfU7xDE7srUL5u25MaGtCwnOEbkHRaAF79n-EfiLuaZZH0rOHqlk0u46Xp3XGv-0K2txd0xWvCnGA364U0SNrWyr7_GW8ToWlZmJCBVP4zjHsGr4WZjAIrC9czBqCGBk5QZ9NGjUe8v_t4a4xnpLz0mDi5aDdt3Ok-FHxoBNGQWPHQihZ75StmWE2XulGXe2dA==",
-                secondary_repo_token="gAAAAABjz9lnHrj2hOtmb1eAE3hQYo3DKfU7xDE7srUL5u25MaGtCwnOEbkHRaAF79n-EfiLuaZZH0rOHqlk0u46Xp3XGv-0K2txd0xWvCnGA364U0SNrWyr7_GW8ToWlZmJCBVP4zjHsGr4WZjAIrC9czBqCGBk5QZ9NGjUe8v_t4a4xnpLz0mDi5aDdt3Ok-FHxoBNGQWPHQihZ75StmWE2XulGXe2dA==",
+                primary_repo_token=crypt.encrypt("I really want to swear here!"),
+                secondary_repo_token=crypt.encrypt("Hello World. Remember me?"),
                 primary_repo_type=RepoTypeChoices.GITHUB,
             )
             url = "https://example.com" + reverse(
@@ -67,8 +67,8 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             project = ProjectFactory(
                 primary_repo_owner="automator-git",
                 primary_repo_name="secondary-2",
-                primary_repo_token="gAAAAABjz9ljHYf96xgVJ9ZWYeeidVA7h6zW0lTM94fPDflZk7LD3NTEYIu6baTN5jNh-tWmTUv67-DuwDh9QH4d0fDHBeGmdTzd7e3ObQo6lVgJyp0rYw5kuX6bzSIWb70IKFF6808WKAXTmMDY_TK7V3OG7aXTrI_dCAPwcc2WtHjLxNL-gY-y9tWKmkv-kbcS8J4Nq_FYtA8ZuLzgfnvvpfOhlUa6xg==",
-                secondary_repo_token="gAAAAABjz9ljHYf96xgVJ9ZWYeeidVA7h6zW0lTM94fPDflZk7LD3NTEYIu6baTN5jNh-tWmTUv67-DuwDh9QH4d0fDHBeGmdTzd7e3ObQo6lVgJyp0rYw5kuX6bzSIWb70IKFF6808WKAXTmMDY_TK7V3OG7aXTrI_dCAPwcc2WtHjLxNL-gY-y9tWKmkv-kbcS8J4Nq_FYtA8ZuLzgfnvvpfOhlUa6xg==",
+                primary_repo_token=crypt.encrypt("expired token"),
+                secondary_repo_token=crypt.encrypt("repo-automator"),
                 primary_repo_type=RepoTypeChoices.BITBUCKET,
             )
             url = "https://example.com" + reverse(
@@ -96,16 +96,18 @@ class ProjectUtilsTestCase(BaseModelTestCase):
                     "pullrequest:updated",
                     "repo:push",
                     "issue:created",
-                    "issue:updated"
+                    "issue:updated",
                 ],
                 "skip_cert_verification": True,
             }
-        post_mock.assert_called_with(
-            project.primary_repo_webhook_url.replace("repositories/automator-git", "workspaces"),
-            data=json.dumps(expected_payload),
-            headers=expected_headers,
-            timeout=3000,
-        )
+            post_mock.assert_called_with(
+                project.primary_repo_webhook_url.replace(
+                    "repositories/automator-git", "workspaces"
+                ),
+                data=json.dumps(expected_payload),
+                headers=expected_headers,
+                timeout=3000,
+            )
 
 
 class TestMakeRequest(TestCase):

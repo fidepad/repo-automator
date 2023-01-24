@@ -84,7 +84,7 @@ class ProjectAPITestCase(BaseAPITestCase):
             "http://testserver"
             + reverse("project:project-webhook", args=[project.slug]),
             self.user.email,
-            project_.data
+            project_.data,
         )
 
         self.assertTrue(validate_repo_mock.called)
