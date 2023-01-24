@@ -25,7 +25,6 @@ flake8==6.0.0
 flake8-isort==5.0.3
 frida==16.0.4
 frida-tools==12.0.2
-GDAL==3.6.0
 gitdb==4.0.10
 GitPython==3.1.29
 h11==0.14.0
