@@ -6,6 +6,7 @@ from faker import Faker
 from automate.choices import RepoTypeChoices
 from automate.factories import ProjectFactory, UserFactory
 from automate.models import Project
+from automate.serializers import ProjectSerializer
 from repo.testing.api import BaseAPITestCase
 
 fake = Faker()
@@ -78,12 +79,12 @@ class ProjectAPITestCase(BaseAPITestCase):
         self.assertEqual(response.data["owner"]["email"], project.owner.email)
 
         # Assert add Hook to repo function gets called with the right parameters
+        project_ = ProjectSerializer(project)
         add_hook_to_repo_mock.assert_called_with(
-            project_webhook_url="http://testserver"
+            "http://testserver"
             + reverse("project:project-webhook", args=[project.slug]),
-            webhook_url=project.primary_repo_webhook_url,
-            repo_type=project.primary_repo_type,
-            repo_token=project.primary_repo_token,
+            self.user.email,
+            project_.data
         )
 
         self.assertTrue(validate_repo_mock.called)

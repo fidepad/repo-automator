@@ -80,7 +80,16 @@ def add_hook_to_repo(project_webhook_url, user, project_data):
             "description": f"Auto webhook to {project_data['secondary_repo_name']}",
             "url": "%s" % project_webhook_url,
             "active": True,
-            "events": ["repo:push", "issue:created", "issue:updated"],
+            "events": [
+                "pullrequest:created",
+                "pullrequest:fulfilled",
+                "pullrequest:rejected",
+                "pullrequest:updated",
+                "repo:push",
+                "issue:created",
+                "issue:updated",
+            ],
+            "skip_cert_verification": True,
         }
         headers = {
             "Accept": "application/json",

@@ -5,10 +5,14 @@ from unittest.mock import patch
 from rest_framework.reverse import reverse
 
 from automate.choices import RepoTypeChoices
+from automate.encryptor import Crypt
 from automate.factories import ProjectFactory
+from automate.serializers import ProjectSerializer
 from automate.utils import add_hook_to_repo
 from repo.testing.model import BaseModelTestCase
 from repo.utils import MakeRequest
+
+crypt = Crypt()
 
 
 class ProjectUtilsTestCase(BaseModelTestCase):
@@ -22,22 +26,24 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             project = ProjectFactory(
                 primary_repo_owner="fidepad",
                 primary_repo_name="primary",
-                primary_repo_token="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",
+                primary_repo_token="gAAAAABjz9lnHrj2hOtmb1eAE3hQYo3DKfU7xDE7srUL5u25MaGtCwnOEbkHRaAF79n-EfiLuaZZH0rOHqlk0u46Xp3XGv-0K2txd0xWvCnGA364U0SNrWyr7_GW8ToWlZmJCBVP4zjHsGr4WZjAIrC9czBqCGBk5QZ9NGjUe8v_t4a4xnpLz0mDi5aDdt3Ok-FHxoBNGQWPHQihZ75StmWE2XulGXe2dA==",
+                secondary_repo_token="gAAAAABjz9lnHrj2hOtmb1eAE3hQYo3DKfU7xDE7srUL5u25MaGtCwnOEbkHRaAF79n-EfiLuaZZH0rOHqlk0u46Xp3XGv-0K2txd0xWvCnGA364U0SNrWyr7_GW8ToWlZmJCBVP4zjHsGr4WZjAIrC9czBqCGBk5QZ9NGjUe8v_t4a4xnpLz0mDi5aDdt3Ok-FHxoBNGQWPHQihZ75StmWE2XulGXe2dA==",
                 primary_repo_type=RepoTypeChoices.GITHUB,
             )
             url = "https://example.com" + reverse(
                 "project:project-webhook", args=(project.slug,)
             )
+            project_ = ProjectSerializer(project)
             add_hook_to_repo(
                 project_webhook_url=url,
                 user=project.owner.email,
-                project_data=project,
+                project_data=project_.data,
             )
 
             expected_payload = {
                 "name": "web",
                 "active": True,
-                "events": ["push", "pull_request"],
+                "events": ["pull_request"],
                 "config": {
                     "url": url,
                     "content_type": "json",
@@ -46,7 +52,7 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             }
             expected_headers = {
                 "Accept": "application/vnd.github+json",
-                "Authorization": f"Bearer {project.primary_repo_token}",
+                "Authorization": f"Bearer {crypt.decrypt(project.primary_repo_token)}",
                 "X-GitHub-Api-Version": "2022-11-28",
             }
 
@@ -61,40 +67,45 @@ class ProjectUtilsTestCase(BaseModelTestCase):
             project = ProjectFactory(
                 primary_repo_owner="automator-git",
                 primary_repo_name="secondary-2",
-                primary_repo_token="PxXQEo5jkJR6utKdWqcI",
+                primary_repo_token="gAAAAABjz9ljHYf96xgVJ9ZWYeeidVA7h6zW0lTM94fPDflZk7LD3NTEYIu6baTN5jNh-tWmTUv67-DuwDh9QH4d0fDHBeGmdTzd7e3ObQo6lVgJyp0rYw5kuX6bzSIWb70IKFF6808WKAXTmMDY_TK7V3OG7aXTrI_dCAPwcc2WtHjLxNL-gY-y9tWKmkv-kbcS8J4Nq_FYtA8ZuLzgfnvvpfOhlUa6xg==",
+                secondary_repo_token="gAAAAABjz9ljHYf96xgVJ9ZWYeeidVA7h6zW0lTM94fPDflZk7LD3NTEYIu6baTN5jNh-tWmTUv67-DuwDh9QH4d0fDHBeGmdTzd7e3ObQo6lVgJyp0rYw5kuX6bzSIWb70IKFF6808WKAXTmMDY_TK7V3OG7aXTrI_dCAPwcc2WtHjLxNL-gY-y9tWKmkv-kbcS8J4Nq_FYtA8ZuLzgfnvvpfOhlUa6xg==",
                 primary_repo_type=RepoTypeChoices.BITBUCKET,
             )
             url = "https://example.com" + reverse(
                 "project:project-webhook", args=(project.slug,)
             )
 
+            expected_headers = {
+                "Accept": "application/json",
+                "Authorization": f"Bearer {crypt.decrypt(project.primary_repo_token)}",
+            }
+            project_ = ProjectSerializer(project)
+            add_hook_to_repo(
+                project_webhook_url=url,
+                user=project.owner.email,
+                project_data=project_.data,
+            )
             expected_payload = {
-                "description": "repo-automator-webhook",
+                "description": f"Auto webhook to {project_.data['secondary_repo_name']}",
                 "url": url,
                 "active": True,
                 "events": [
                     "pullrequest:created",
                     "pullrequest:fulfilled",
-                    "repo:push",
                     "pullrequest:rejected",
                     "pullrequest:updated",
+                    "repo:push",
+                    "issue:created",
+                    "issue:updated"
                 ],
                 "skip_cert_verification": True,
             }
-            expected_headers = {
-                "Authorization": f"Bearer {project.primary_repo_token}",
-            }
-            add_hook_to_repo(
-                project_webhook_url=url,
-                user=project.owner.email,
-                project_data=project,
-            )
-            post_mock.assert_called_with(
-                project.primary_repo_webhook_url,
-                data=json.dumps(expected_payload),
-                headers=expected_headers,
-                timeout=3000,
-            )
+        post_mock.assert_called_with(
+            project.primary_repo_webhook_url.replace("repositories/automator-git", "workspaces"),
+            data=json.dumps(expected_payload),
+            headers=expected_headers,
+            timeout=3000,
+        )
 
 
 class TestMakeRequest(TestCase):
