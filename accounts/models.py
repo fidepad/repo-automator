@@ -41,6 +41,8 @@ class UserManager(BaseUserManager):
             User: The created superuser instance.
         """
         extra_fields.setdefault("is_admin", True)
+        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault("is_staff", True)
         return self.create_user(email, password, **extra_fields)
 
 
@@ -51,6 +53,8 @@ class User(PermissionsMixin, BaseModel, AbstractBaseUser):
     name = models.CharField(max_length=250)
     email = models.EmailField(max_length=250, unique=True)
     is_admin = models.BooleanField(default=False, blank=True)
+    is_staff = models.BooleanField(default=False, blank=True)
+    is_superuser = models.BooleanField(default=False, blank=True)
     objects = UserManager()
 
     EMAIL_FIELD = "email"

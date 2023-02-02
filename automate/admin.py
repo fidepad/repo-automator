@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from automate.models import Project
+from .models import History, Project, ProjectActivities
 
 
 class ProjectAdmin(admin.ModelAdmin):
@@ -15,3 +15,5 @@ class ProjectAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Project, ProjectAdmin)
+admin.site.register(History)
+admin.site.register(ProjectActivities)
