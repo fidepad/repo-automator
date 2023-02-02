@@ -26,6 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         """Meta class for Register Serializer."""
+
         model = User
         exclude = ["created_at", "updated_at"]
 
@@ -43,16 +44,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(errors)
         return super().validate(attrs)
 
-
     def create(self, validated_data):
         """Create user with the object manager."""
         data = validated_data
-        user = User.objects.create_user(
-            data["email"], data["password"], name=data["name"])
+        User.objects.create_user(data["email"], data["password"], name=data["name"])
 
         return data
 
     def to_representation(self, instance):
         data = {"message": "User created successfully!"}
         return data
-

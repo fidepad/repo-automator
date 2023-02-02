@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from knox.views import LoginView
-from rest_framework.permissions import AllowAny
 from rest_framework.generics import CreateAPIView
+from rest_framework.permissions import AllowAny
 
 from repo.api.serializers import AuthTokenSerializer, RegisterSerializer
 
@@ -25,7 +25,8 @@ class RepoLoginView(LoginView):
 
 
 class RepoRegisterView(CreateAPIView):
-    """This endpoint is responsible for registering new users into the platform."""
+    """This endpoint is responsible for registering new users into the
+    platform."""
 
     permission_classes = (AllowAny,)
     serializer_class = RegisterSerializer

@@ -36,7 +36,7 @@ class TestRepoRegister(BaseAPITestCase):
             "email": "test@mail.com",
             "name": "Full Name",
             "password": "TestingPassword123.",
-            "terms": True
+            "terms": True,
         }
 
     def test_successful_register(self):
@@ -61,11 +61,16 @@ class TestRepoRegister(BaseAPITestCase):
             response = self.client.post(self.url, self.data)
             content = response.json()
             self.assertTrue(response.status_code == 400)
-            self.assertEqual(content["non_field_errors"][0], "Read and accept our terms and conditions!")
-        
+            self.assertEqual(
+                content["non_field_errors"][0],
+                "Read and accept our terms and conditions!",
+            )
+
         with self.subTest("This test ensures existing user can't be re-registered."):
             self.data["email"] = self.user.email
             response = self.client.post(self.url, self.data)
             content = response.json()
             self.assertTrue(response.status_code == 400)
-            self.assertEqual(content["email"][0], "user with this email already exists.")
+            self.assertEqual(
+                content["email"][0], "user with this email already exists."
+            )
