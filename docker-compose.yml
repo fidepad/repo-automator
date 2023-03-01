@@ -3,29 +3,38 @@ services:
   redis:
     image: redis:alpine
     container_name: redis_repo_container
-    
-  db:
-    container_name: db
-    image: postgres
-    env_file:
-      - .env
-    ports:
-      - "5432:5432"
+  
+  nginx:
+    build: ./nginx
     volumes:
-      - repo_db:/data/repo_db
-    restart: always
-
+      - static_volume:/repo_automator/staticfiles
+    ports:
+      - 3002:80
+    depends_on:
+      - app
+  
   app:
     build: .
     volumes:
     - .:/repo_automator
-    ports:
-    - 8005:8000
-    image: app:repo_automator
+    - static_volume:/repo_automator/staticfiles
     container_name: django_repo_container
-    command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn repo.wsgi:application --bind 0.0.0.0:8000
+    expose:
+      - 8000
     depends_on:
       - db
+    
+  db:
+    container_name: db_repo_automator
+    image: postgres
+    env_file:
+      - .env
+    volumes:
+      - repo_db:/data/repo_db
+    restart: always
+
+  
 
   celery:
     restart: on-failure
@@ -41,5 +50,7 @@ services:
       - redis
       - app
 
+
 volumes:
   repo_db:
+  static_volume:

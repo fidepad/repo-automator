@@ -3,7 +3,6 @@ asgiref==3.5.2
 astroid==2.12.13
 async-timeout==4.0.2
 attrs==22.1.0
-backports.zoneinfo==0.2.1
 billiard==3.6.4.0
 black==22.12.0
 celery==5.2.7
@@ -34,6 +33,7 @@ filters-django==1.0.5
 flake8==6.0.0
 gitdb==4.0.10
 GitPython==3.1.30
+gunicorn==20.1.0
 idna==3.4
 importlib-resources==5.10.1
 inflection==0.5.1
