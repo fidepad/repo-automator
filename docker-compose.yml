@@ -9,7 +9,7 @@ services:
     volumes:
       - static_volume:/repo_automator/staticfiles
     ports:
-      - 3002:80
+      - 80:80
     depends_on:
       - app
   
