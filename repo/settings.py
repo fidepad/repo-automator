@@ -173,9 +173,12 @@ CELERY_RESULT_BACKEND = "redis://redis:6379"
 GITHUB_BASE_URL = "https://api.github.com"
 BITBUCKET_BASE_URL = "https://api.bitbucket.org/2.0"
 
-
 # Custom User
 AUTH_USER_MODEL = "accounts.User"
 
 # CORS
 CORS_ALLOW_ALL_ORIGINS = True
+
+
+CORS_ALLOWED_ORIGINS = ["*"]
+CSRF_TRUSTED_ORIGINS = ["*"]
