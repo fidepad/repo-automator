@@ -177,7 +177,7 @@ BITBUCKET_BASE_URL = "https://api.bitbucket.org/2.0"
 AUTH_USER_MODEL = "accounts.User"
 
 # CORS
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
 
 
 CORS_ALLOWED_ORIGINS = ["*"]
